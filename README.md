@@ -2,6 +2,8 @@
 
 - [SvgTtf](#svgttf)
 	- [What SvgTtf does](#what-svgttf-does)
+	- [How SvgTtf does what it does](#how-svgttf-does-what-it-does)
+	- [What SvgTtf does not do](#what-svgttf-does-not-do)
 	- [How to structure your SVG design sheet](#how-to-structure-your-svg-design-sheet)
 	- [Motivation](#motivation)
 
@@ -33,6 +35,24 @@ fonts.**
 > version of your font—but i believe there are command line tools to help you with that, too).
 
 
+## How SvgTtf does what it does
+
+* There's a [W3C recommendation for defining fonts inside SVG files](http://www.w3.org/TR/SVG/fonts.html).
+* Unfortunately, there seem to be no (good) editors for SVG fonts.
+* But there are editors for SVG files, Inkscape and Adobe Illustrator being two.
+* SvgTtf takes one or more SVG files with ordinary outlines ('path' elements) and converts the outlines
+  into SVG font glyph outlines (this primarily means scaling, translating, and mirroring paths to adapt
+  them to the SVG font glyph coordinate system).
+* SvgTtf looks where each outline is located on a design sheet and uses the position, a metrics configuration
+  (for the grid into which to place outlines) and the input filename to compute the desired target position
+  (so when a file is called `xxx-ab00.svg`  and a given path sits in the fourth cell of the first row that
+  means the intended target is Unicode CID U+AB04).
+* SvgTtf then uses [svg2ttf](https://github.com/fontello/svg2ttf) to turn the SVG font source XML into
+  a TTF binary target represention and write that into a `*.ttf` file.
+
+## What SvgTtf does not do
+
+*
 
 ## How to structure your SVG design sheet
 
