@@ -1,0 +1,38 @@
+{
+  "name": "svgttf",
+  "version": "0.0.0",
+  "description": "NodeJS library to convert Illustrator or Inkscape desgin sheets to SVG and TTF fonts",
+  "main": "lib/main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/loveencounterflow/svgttf.git"
+  },
+  "keywords": [
+    "ttf",
+    "svg",
+    "font",
+    "convert",
+    "design"
+  ],
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/loveencounterflow/svgttf/issues"
+  },
+  "dependencies": {
+    "coffee-script": "^1.8.0",
+    "coffeenode-chr": "^0.1.3",
+    "coffeenode-teacup": "0.0.17",
+    "coffeenode-trm": "^0.1.20",
+    "glob": "^4.0.6",
+    "lodash": "~ 2.1.0",
+    "svg2ttf": "^1.1.2",
+    "svgpath": "~ 1.0.0",
+    "xmldom-silent": "~ 0.1.16",
+    "xpath": "0.0.7"
+  },
+  "homepage": "https://github.com/loveencounterflow/svgttf"
+}
