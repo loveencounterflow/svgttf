@@ -432,15 +432,16 @@ unless module.parent? then do =>
   #.........................................................................................................
   # Usage: #{filename} svg svgfont <directory> <font-name> [<output>]
   #        #{filename} svg ttf <directory> <font-name> [<output>]
+  # Usage: svgttf [-f] <input-format> <output-format> <input-directory> <font-name> <output>
   usage     = """
-  Usage: svgttf [-f] <input-format> <output-format> <input-directory> <font-name> <output>
+  Usage: svgttf [-f] <input-directory> <font-name> <input-format> <output-directory> <output-format>
 
         Currently the only allowed arguments are:
         <input-format>:     must be `svg`
         <output-format>:    must be `ttf`
         <input-directory>:  route to directory with your SVG design sheets
         <font-name>:        name of your font
-        <output>:           output directory
+        <output-directory>: directory where output is written to
 
         Please observe:
 
@@ -453,6 +454,7 @@ unless module.parent? then do =>
 
         * Use `.` (dot) to get a file named `myfontname.ttf` in the current directory.
 
+        * `svgttf` will not overwrite an existing file unless given the `--force` (or `-f`) option.
 
   Options:
     -h, --help
