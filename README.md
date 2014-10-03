@@ -45,13 +45,13 @@ outlines—simply because it works. My workflow for some years has been like thi
 3. make changes to some shapes.
 
 4. Then, for each new or changed outline:
-  4.1. open a 'transport' SVG file into which i paste the outline, one at a time; save it; then
-  4.2. change over to FontForge, double-click into the box of the codepoint where the next shape
+  **4.1.** open a 'transport' SVG file into which i paste the outline, one at a time; save it; then
+  **4.2.** change over to FontForge, double-click into the box of the codepoint where the next shape
     should appear, then
-  4.3. from the sub-window that opens, open the `import` dialog, where i navigate to the transport file
+  **4.3.** from the sub-window that opens, open the `import` dialog, where i navigate to the transport file
     and select it, whereupon
-  4.4. the preview for the new glyph appears.
-  4.5. i can now save the `*.sfd` and generate a `*.ttf` font file.
+  **4.4.** the preview for the new glyph appears.
+  **4.5.** i can now save the `*.sfd` and generate a `*.ttf` font file.
 
 This process is as time consuming as it is boring and prone to errors.
 
