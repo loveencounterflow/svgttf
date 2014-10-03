@@ -7,6 +7,5 @@
 
 # SvgTtf
 
-NodeJS library to convert Illustrator or Inkscape desgin sheets to SVG and TTF fonts
-
+![](https://github.com/loveencounterflow/svgttf/raw/master/art/jizura3-e000.png)
 
