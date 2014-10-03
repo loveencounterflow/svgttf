@@ -20,6 +20,7 @@ xpath                     = require 'xpath'
 #...........................................................................................................
 CHR                       = require 'coffeenode-chr'
 TRM                       = require 'coffeenode-trm'
+TEXT                      = require 'coffeenode-text'
 rpr                       = TRM.rpr.bind TRM
 badge                     = 'svg2ttf/svg-to-svg-font'
 log                       = TRM.get_logger 'plain',   badge
@@ -39,6 +40,9 @@ T                         = require 'coffeenode-teacup'
 #...........................................................................................................
 ### https://github.com/isaacs/node-glob ###
 glob                      = require 'glob'
+#...........................................................................................................
+### https://github.com/fontello/svg2ttf ###
+svg2ttf                   = require 'svg2ttf'
 
 
 #===========================================================================================================
@@ -67,7 +71,9 @@ options[ 'scale' ] = em_size / module
 #===========================================================================================================
 #
 #-----------------------------------------------------------------------------------------------------------
-@load = ( input_routes... ) ->
+@main = ( settings ) ->
+  input_routes    = settings[ 'input-routes' ]
+  # debug settings
   glyphs          = {}
   glyph_count     = 0
   parser          = new DOMParser()
@@ -78,7 +84,7 @@ options[ 'scale' ] = em_size / module
   fallback_source = null
   min_cid         = +Infinity
   max_cid         = -Infinity
-  font_name       = @_font_name_from_route routes[ 0 ]
+  font_name       = settings[ 'font-name' ]
   info "reading files for font #{rpr font_name}"
   #.........................................................................................................
   for route in input_routes
@@ -91,7 +97,7 @@ options[ 'scale' ] = em_size / module
     doc               = parser.parseFromString( source, 'application/xml' )
     paths             = select selector, doc
     path_count        = paths.length
-    info "#{filename}: found #{paths.length} outlines"
+    whisper "#{filename}: found #{paths.length} outlines"
     #.......................................................................................................
     for path in paths
       d             = path.getAttribute 'd'
@@ -135,7 +141,7 @@ options[ 'scale' ] = em_size / module
     if local_glyph_count > 0
       min_cid_hex = '0x' + local_min_cid.toString 16
       max_cid_hex = '0x' + local_max_cid.toString 16
-      help "#{filename}: added #{local_glyph_count} glyph outlines in [ #{min_cid_hex} .. #{max_cid_hex} ]"
+      help "#{filename}: added #{local_glyph_count} glyph outlines to [ #{min_cid_hex} .. #{max_cid_hex} ]"
     else
       warn "#{filename}: no glyphs found"
   #.........................................................................................................
@@ -151,8 +157,7 @@ options[ 'scale' ] = em_size / module
     whisper "filled #{fallback_count} positions with fallback outline from #{fallback_source}"
   min_cid_hex = '0x' + min_cid.toString 16
   max_cid_hex = '0x' + max_cid.toString 16
-  help "added #{glyph_count} glyph outlines in [ #{min_cid_hex} .. #{max_cid_hex} ]"
-  help "writing SVG"
+  help "added #{glyph_count} glyph outlines to [ #{min_cid_hex} .. #{max_cid_hex} ]"
   #.........................................................................................................
   glyphs = ( entry for _, entry of glyphs )
   glyphs.sort ( a, b ) ->
@@ -160,31 +165,16 @@ options[ 'scale' ] = em_size / module
     return -1 if a[ 0 ] < b[ 0 ]
     return  0
   #.........................................................................................................
-  svg     = @svg_from_name_and_glyphs font_name, glyphs
-  svg2ttf = require '../index.js'
-  ttf     = svg2ttf svg
-  njs_fs.writeFileSync '/tmp/jizura3.ttf', new Buffer ttf.buffer
-  # echo svg
+  svgfont = @svgfont_from_name_and_glyphs font_name, glyphs
+  return @_write_ttf svgfont, settings
 
 #-----------------------------------------------------------------------------------------------------------
-@_font_name_from_route = ( route ) ->
-  match = route.match /([^\/]+)-[0-9a-f]+?\.svg$/
-  unless match?
-    throw new Error "unable to parse route #{rpr route}"
-  R = match[ 1 ]
-  unless R.length > 0
-    throw new Error "illegal font name in route #{rpr route}"
-  return R
+@_write_ttf = ( svgfont, settings ) ->
+  output_route  = settings[ 'output-route' ]
+  ### svg2ttf has a strange API and returns a buffer that isn't a `Buffer`...  ###
+  njs_fs.writeFileSync output_route, new Buffer ( svg2ttf svgfont ).buffer
+  help "output written to #{output_route}"
 
-#-----------------------------------------------------------------------------------------------------------
-@_cid0_from_route = ( route ) ->
-  match = route.match /-([0-9a-f]+)\.svg$/
-  unless match?
-    throw new Error "unable to parse route #{rpr route}"
-  R = parseInt match[ 1 ], 16
-  unless 0x0000 <= R <= 0x10ffff
-    throw new Error "illegal CID in route #{rpr route}"
-  return R
 
 #===========================================================================================================
 #
@@ -309,17 +299,8 @@ T.path = ( path ) ->
   path_txt = T._rpr_path path
   return T.TAG 'path', d: path_txt, fill: '#000'
 
-# #-----------------------------------------------------------------------------------------------------------
-# do =>
-#   for name in 'glyph marker font font-face'.split /\s+/
-#     continue unless ( method = T[ name ] )?
-#     # TRM.dir T
-#     do ( method ) =>
-#       T[ '$' + name ] = T.render ( P... ) ->
-#         return method P...
-
 #-----------------------------------------------------------------------------------------------------------
-@svg_from_name_and_glyphs = ( font_name, glyphs ) ->
+@svgfont_from_name_and_glyphs = ( font_name, glyphs ) ->
   return T.render =>
     #.........................................................................................................
     T.RAW """<?xml version="1.0" encoding="utf-8"?>\n"""
@@ -344,8 +325,84 @@ T.path = ( path ) ->
   return null
 
 
+############################################################################################################
+# HANDLE SETTINGS
+#-----------------------------------------------------------------------------------------------------------
+@_compile_settings = ( cli_options ) ->
+  R =
+    'overwrite':          cli_options[ '--force'            ]
+    'input-format':       cli_options[ '<input-format>'     ]
+    'output-format':      cli_options[ '<output-format>'    ]
+    'input-directory':    cli_options[ '<input-directory>'  ]
+    'font-name':          cli_options[ '<font-name>'        ]
+    'output':             cli_options[ '<output>'           ]
+  @_get_input_routes R
+  @_get_output_route R
+  #.........................................................................................................
+  for name in ( name for name of R ).sort()
+    whisper ( TEXT.flush_left name + ':', 20 ), rpr R[ name ]
+  #.........................................................................................................
+  return R
+
+#-----------------------------------------------------------------------------------------------------------
+@_get_output_route = ( settings ) ->
+  output_format     = settings[ 'output-format'   ]
+  output            = settings[ 'output'          ]
+  font_name         = settings[ 'font-name'       ]
+  #.........................................................................................................
+  switch output_format
+    when 'ttf'
+      extension = settings[ 'output-extension' ] = 'ttf'
+    else throw new Error "output format not supported: #{rpr output_format}"
+  #.........................................................................................................
+  R = settings[ 'output-route' ] = @_join_routes output, "#{font_name}.#{extension}"
+  if ( not settings[ 'overwrite' ] ) and njs_fs.existsSync R
+    warn "target already exists: #{R}"
+    help "either"
+    help "  * correct your input"
+    help "  * or remove target first"
+    help "  * or use the `-f` option"
+    throw new Error "target exists"
+
+#-----------------------------------------------------------------------------------------------------------
+@_get_input_routes = ( settings ) ->
+  input_format      = settings[ 'input-format'    ]
+  input_directory   = settings[ 'input-directory' ]
+  font_name         = settings[ 'font-name'       ]
+  #.........................................................................................................
+  switch input_format
+    when 'svg', 'svgfont'
+      extension = settings[ 'input-extension' ] = 'svg'
+    else throw new Error "input format not supported: #{rpr input_format}"
+  #.........................................................................................................
+  name_glob   = "#{font_name}-+([0-9a-f]).#{extension}"
+  route_glob  = settings[ 'input-glob'    ] = @_join_routes input_directory, name_glob
+  R           = settings[ 'input-routes'  ] = glob.sync route_glob
+  return R
+
+#-----------------------------------------------------------------------------------------------------------
+@_font_name_from_route = ( route ) ->
+  match = route.match /([^\/]+)-[0-9a-f]+?\.svg$/
+  unless match?
+    throw new Error "unable to parse route #{rpr route}"
+  R = match[ 1 ]
+  unless R.length > 0
+    throw new Error "illegal font name in route #{rpr route}"
+  return R
+
+#-----------------------------------------------------------------------------------------------------------
+@_cid0_from_route = ( route ) ->
+  match = route.match /-([0-9a-f]+)\.svg$/
+  unless match?
+    throw new Error "unable to parse route #{rpr route}"
+  R = parseInt match[ 1 ], 16
+  unless 0x0000 <= R <= 0x10ffff
+    throw new Error "illegal CID in route #{rpr route}"
+  return R
+
+
 #===========================================================================================================
-#
+# HELPERS
 #-----------------------------------------------------------------------------------------------------------
 @demo = ->
   d = "M168,525.89c38,36,48,48,46,81s5,47-46,52 s-88,35-91-27s-21-73,11-92S168,525.89,168,525.89z"
@@ -361,24 +418,55 @@ T.path = ( path ) ->
   # debug path.toString()
   help @points_from_absolute_path path
   help @center_from_absolute_path path
-
   debug @f path
 
+#-----------------------------------------------------------------------------------------------------------
+@_join_routes = ( P... ) -> njs_path.resolve process.cwd(), njs_path.join P...
+
+
 ############################################################################################################
-unless module.parent?
-  # source = ( require 'fs' ).readFileSync '/Volumes/Storage/jizura-materials-2/jizura-font-v3/jizura3-0000.svg', encoding: 'utf-8'
-  # source = ( require 'fs' ).readFileSync '/tmp/test-e000.svg', encoding: 'utf-8'
-  # source = ( require 'fs' ).readFileSync '/Volumes/Storage/jizura-materials-2/jizura-font-v3/jizura3-e000.svg', encoding: 'utf-8'
+unless module.parent? then do =>
+  docopt    = ( require 'coffeenode-docopt' ).docopt
+  # filename  = ( require 'path' ).basename __filename
+  version   = ( require '../package.json' )[ 'version' ]
+  #.........................................................................................................
+  # Usage: #{filename} svg svgfont <directory> <font-name> [<output>]
+  #        #{filename} svg ttf <directory> <font-name> [<output>]
+  usage     = """
+  Usage: svgttf [-f] <input-format> <output-format> <input-directory> <font-name> <output>
 
-  route_glob = '/Volumes/Storage/jizura-materials-2/jizura-font-v3/jizura3-*([0-9a-f]).svg'
-  routes = glob.sync route_glob
-  @load routes...
+        Currently the only allowed arguments are:
+        <input-format>:     must be `svg`
+        <output-format>:    must be `ttf`
+        <input-directory>:  route to directory with your SVG design sheets
+        <font-name>:        name of your font
+        <output>:           output directory
+
+        Please observe:
+
+        * The structure of your SVG design sheets must follow the guidelines as detailed in the
+          project README.md.
+
+        * Your font files must be named like `myfontname-e100.svg`, `myfontname-e200.svg`, ..., i.e.
+          each filename has the font name first and ends with an indication of the first CID (Unicode
+          codepoint, in hexadecimal) and the filename extension `.svg`.
+
+        * Use `.` (dot) to get a file named `myfontname.ttf` in the current directory.
 
 
-
-
-
-
+  Options:
+    -h, --help
+    -v, --version
+    -f, --force
+  """
+  #.........................................................................................................
+  cli_options = docopt usage, version: version, help: ( left, collected ) ->
+    # urge left
+    # help collected
+    help '\n' + usage
+  #.........................................................................................................
+  if cli_options?
+    @main @_compile_settings cli_options
 
 
 
