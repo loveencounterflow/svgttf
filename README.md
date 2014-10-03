@@ -1,7 +1,7 @@
 
 
 - [SvgTtf](#svgttf)
-	- [What SvgTtf is for](#what-svgttf-is-for)
+	- [Motivation](#motivation)
 
 > **Table of Contents**  *generated with [DocToc](http://doctoc.herokuapp.com/)*
 
@@ -20,7 +20,7 @@ node svgttf/lib/main.js -f svgttf/art svgttf-sample-font svg /tmp ttf
 ```
 
 
-## What SvgTtf is for
+## Motivation
 
 When wanting to design a font, there are a couple of things that really annoy me:
 
@@ -38,13 +38,13 @@ When wanting to design a font, there are a couple of things that really annoy me
 So i've been using a (free trial edition of) Adobe Illustrator and Inkscape to produce my glyph
 outlines—simply because it works. My workflow for some years has been like this:
 
-1. Open the `*.sfd` (i.e. FontForge) file for the target font in FontForge.
+**1.** Open the `*.sfd` (i.e. FontForge) file for the target font in FontForge.
 
-2. Open the design SVG file in the vector editor;
+**2.** Open the design SVG file in the vector editor;
 
-3. make changes to some shapes.
+**3.** make changes to some shapes.
 
-4. Then, for each new or changed outline:
+**4.** Then, for each new or changed outline:
   **4.1.** open a 'transport' SVG file into which i paste the outline, one at a time; save it; then
   **4.2.** change over to FontForge, double-click into the box of the codepoint where the next shape
     should appear, then
