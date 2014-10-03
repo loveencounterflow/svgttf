@@ -1,6 +1,8 @@
 
 
 - [SvgTtf](#svgttf)
+	- [What SvgTtf does](#what-svgttf-does)
+	- [How to structure your SVG design sheet](#how-to-structure-your-svg-design-sheet)
 	- [Motivation](#motivation)
 
 > **Table of Contents**  *generated with [DocToc](http://doctoc.herokuapp.com/)*
@@ -18,6 +20,23 @@
 ```bash
 node svgttf/lib/main.js -f svgttf/art svgttf-sample-font svg /tmp ttf
 ```
+
+## What SvgTtf does
+
+**SvgTtf turns ordinary SVG documents (that are structured as described below) into installable `*.ttf`
+fonts.**
+
+> There's no need to buy and / or install a font editor in case the very reduced functionalities of SvgTtf
+> is enough for your project. That said, FontForge (a free editor that is easily installed—OSX users can
+> download a precompiled app; you need XQuartz for it to run) can be used to fill out the details in generated
+> font files (with the caveat that you will have to repeat that process each time you've generated a new
+> version of your font—but i believe there are command line tools to help you with that, too).
+
+
+
+## How to structure your SVG design sheet
+
+In order to keep things simple, i took a few shortcuts on how
 
 
 ## Motivation
@@ -54,6 +73,16 @@ outlines—simply because it works. My workflow for some years has been like thi
   **4.5.** i can now save the `*.sfd` and generate a `*.ttf` font file.
 
 This process is as time consuming as it is boring and prone to errors.
+
+All of the above i can now do with a single line from the terminal:
+
+```bash
+node svgttf/lib/main.js -f svgttf/art svgttf-sample-font svg /tmp ttf
+```
+
+
+
+
 
 
 
