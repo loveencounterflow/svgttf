@@ -1,0 +1,6 @@
+#!/usr/bin/env sh
+
+node ./lib/main.js $*
+
+
+

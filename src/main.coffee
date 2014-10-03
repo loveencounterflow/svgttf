@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 
     # "coffee-script": "^1.8.0",
     # "coffeenode-chr": "^0.1.3",

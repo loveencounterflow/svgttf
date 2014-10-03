@@ -38,7 +38,7 @@
     "xpath": "0.0.7"
   },
   "bin": {
-    "svgttf": "./lib/main.js"
+    "svgttf": "./svgttf.js"
   },
   "homepage": "https://github.com/loveencounterflow/svgttf"
 }
