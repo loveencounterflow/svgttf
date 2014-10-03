@@ -335,7 +335,7 @@ T.path = ( path ) ->
     'output-format':      cli_options[ '<output-format>'    ]
     'input-directory':    cli_options[ '<input-directory>'  ]
     'font-name':          cli_options[ '<font-name>'        ]
-    'output':             cli_options[ '<output>'           ]
+    'output-directory':   cli_options[ '<output-directory>' ]
   @_get_input_routes R
   @_get_output_route R
   #.........................................................................................................
@@ -346,9 +346,9 @@ T.path = ( path ) ->
 
 #-----------------------------------------------------------------------------------------------------------
 @_get_output_route = ( settings ) ->
-  output_format     = settings[ 'output-format'   ]
-  output            = settings[ 'output'          ]
-  font_name         = settings[ 'font-name'       ]
+  output_format     = settings[ 'output-format'     ]
+  output            = settings[ 'output-directory'  ]
+  font_name         = settings[ 'font-name'         ]
   #.........................................................................................................
   switch output_format
     when 'ttf'
