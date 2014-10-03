@@ -29,12 +29,16 @@
     "coffeenode-teacup": "0.0.17",
     "coffeenode-text": "^0.1.8",
     "coffeenode-trm": "^0.1.20",
+    "coffeenode-types": "^0.1.1",
     "glob": "^4.0.6",
     "lodash": "~ 2.1.0",
     "svg2ttf": "^1.1.2",
     "svgpath": "~ 1.0.0",
     "xmldom-silent": "~ 0.1.16",
     "xpath": "0.0.7"
+  },
+  "bin": {
+    "svgttf": "./lib/main.js"
   },
   "homepage": "https://github.com/loveencounterflow/svgttf"
 }
