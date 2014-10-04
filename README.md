@@ -6,6 +6,7 @@
 	- [What SvgTtf does not do](#what-svgttf-does-not-do)
 	- [How to structure your SVG design sheet](#how-to-structure-your-svg-design-sheet)
 	- [Motivation](#motivation)
+	- [BONUS: SVGTTF IN PRODUCTION!](#bonus-svgttf-in-production!)
 
 > **Table of Contents**  *generated with [DocToc](http://doctoc.herokuapp.com/)*
 
@@ -23,6 +24,7 @@ This is what a SVG→TTF conversion may look like:
 The resulting TTF font opened in FontForge—ready for any post-processing:
 
 ![](https://github.com/loveencounterflow/svgttf/raw/master/art/Screen%20Shot%202014-10-04%20at%2002.10.12.jpg)
+
 
 Command line syntax:
 
@@ -176,6 +178,16 @@ All of the above i can now do with a single line from the terminal:
 node svgttf/lib/main.js -f svgttf/art svgttf-sample-font svg /tmp ttf
 ```
 
+## BONUS: SVGTTF IN PRODUCTION!
+
+And yes, i'm using SvgTtf in production. Here's a current session that shows off how SvgTtf reads a series
+of files, skips over files without outlines, and gives a fairly detailed report on the proceedings:
+
+![](https://github.com/loveencounterflow/svgttf/raw/master/art/Screen%20Shot%202014-10-04%20at%2003.28.22.jpg)
+
+The result opened in FontForge:
+
+![](https://github.com/loveencounterflow/svgttf/raw/master/art/Screen%20Shot%202014-10-04%20at%2003.30.08.jpg)
 
 
 
