@@ -62,6 +62,10 @@ svgttf [-f] <input-directory> <font-name> <input-format> <output-directory> <out
 
 **Caveat**: binary currently not working, but this runs fine:
 
+```bash
+node svgttf/lib/main.js svgttf/art svgttf-sample-font svg /tmp ttf
+```
+
 Do
 
 ```bash
