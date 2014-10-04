@@ -191,30 +191,30 @@ When wanting to design a font, there are a couple of things that have been reall
   option available, which really sucks. Then again, the vector editing capabilities of Inkscape are way
   better than those of most if not all available font editors, free or non-free.
 
-So i've been using a (free, 30-days trial edition of) Adobe Illustrator (dubbed 'Creative Cloud', which acc.
-to Adobe is Latin for 'we'll call and talk to like next to every server there is in the world when you
-install the app, whenever you save something, and whenever you re-open it') which will expire soon and
-will fall back to Inkscape after that.
-
-My workflow for some years has been like this:
-
-**1.** I open the `*.sfd` (i.e. FontForge) file for the target font in FontForge, then
-
-**2.** i open the design SVG file in the vector editor;
-
-**3.** make changes to some shapes.
-
-**4.** Then, for each new or changed outline:
-  **4.1.** open a 'transport' SVG file into which i paste the outline, one at a time; save it; then
-  **4.2.** change over to FontForge, double-click into the box of the codepoint where the next shape
-    should appear, then
-  **4.3.** from the sub-window that opens, open the `import` dialog, where i navigate to the transport file
-    and select it, whereupon
-  **4.4.** the preview for the new glyph appears.
-
-**5.** i can now save the `*.sfd` and generate a `*.ttf` font file.
-
-This process is as time consuming as it is boring and prone to errors.
+> So i've been using a (free, 30-days trial edition of) Adobe Illustrator (dubbed 'Creative Cloud', which acc.
+> to Adobe is Latin for 'we'll call and talk to like next to every server there is in the world when you
+> install the app, whenever you save something, and whenever you re-open it') which will expire soon and
+> will fall back to Inkscape after that.
+>
+> My workflow for some years has been like this:
+>
+> **1.** I open the `*.sfd` (i.e. FontForge) file for the target font in FontForge, then
+>
+> **2.** i open the design SVG file in the vector editor;
+>
+> **3.** make changes to some shapes.
+>
+> **4.** Then, for each new or changed outline:
+>   **4.1.** open a 'transport' SVG file into which i paste the outline, one at a time; save it; then
+>   **4.2.** change over to FontForge, double-click into the box of the codepoint where the next shape
+>     should appear, then
+>   **4.3.** from the sub-window that opens, open the `import` dialog, where i navigate to the transport file
+>     and select it, whereupon
+>   **4.4.** the preview for the new glyph appears.
+>
+> **5.** i can now save the `*.sfd` and generate a `*.ttf` font file.
+>
+> This process is as time consuming as it is boring and prone to errors.
 
 All of the above i can now do with a single line from the terminal:
 
