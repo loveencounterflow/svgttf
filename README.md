@@ -5,7 +5,7 @@
 	- [What SvgTtf does](#what-svgttf-does)
 	- [How SvgTtf does what it does](#how-svgttf-does-what-it-does)
 	- [What SvgTtf does not do](#what-svgttf-does-not-do)
-	- [How to structure your SVG design sheet](#how-to-structure-your-svg-design-sheet)
+	- [How to structure your SVG design sheet, organize your workflow, keep on top of things and become a better person](#how-to-structure-your-svg-design-sheet-organize-your-workflow-keep-on-top-of-things-and-become-a-better-person)
 	- [Motivation](#motivation)
 	- [BONUS: SVGTTF IN PRODUCTION!](#bonus-svgttf-in-production!)
 
@@ -109,7 +109,7 @@ fonts.**
   the same (square) dimensions. This is all i need for now.
 
 
-## How to structure your SVG design sheet
+## How to structure your SVG design sheet, organize your workflow, keep on top of things and become a better person
 
 In order to keep things simple, i took a few shortcuts that match my specific needs. In order to get
 started, you may want to open `svgttf/art/svgttf-font-sample.svg` with a program of your preference
