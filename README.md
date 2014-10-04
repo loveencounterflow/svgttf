@@ -259,8 +259,10 @@ The result opened in FontForge:
 ![](https://github.com/loveencounterflow/svgttf/raw/master/art/Screen%20Shot%202014-10-04%20at%2003.30.08.jpg)
 
 These shapes i use to describe the structure of Chinese / Japanese / Korean ('Ideographic') characters; the
-part shown contains stuff i need to rare / strange / archaic / astral characters like 𧪺, 𦴞, 𠉙, 𧀍, 𢕉, 𥻔, 𠔇,
-𠅂, 𠴿, 𢃵, 𡩪, 𥤅, 𤜓, 𤔬, 𤕋, 𥡼, 𦌖, 𦪴, 𦪺, 𦍛, 𪛄 and so on. Here's the stuff in action inside my
+part shown contains stuff i need mainly for such rare / strange / archaic / astral characters as 𧪺, 𦴞, 𠉙, 𧀍, 𢕉, 𥻔, 𠔇,
+𠅂, 𠴿, 𢃵, 𡩪, 𥤅, 𤜓, 𤔬, 𤕋, 𥡼, 𦌖, 𦪴, 𦪺, 𦍛, 𪛄 and so on.
+
+Here's the produced font in action inside my
 (forthcoming) [明快 MingKwai TypeTool ](https://github.com/loveencounterflow/mingkwai) (a.k.a. 'The Chinese
 Typewriter' after the [ingenious invention of Mr. Lin Yutang](http://en.wikipedia.org/wiki/Chinese_typewriter#Ming_Kwai_typewriter)):
 
