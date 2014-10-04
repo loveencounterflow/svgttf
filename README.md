@@ -175,7 +175,7 @@ Here are the pertinent constraints for a SvgTtf-compatible SVG design sheet:
 * When working with Inkscape, keep the overall structure of your SVG document as simple as possible as the
   program sorely lacks an object overview.
 
-* Do not use layers; they get converted to groups anyway so use groups only from the outset.
+* Do not use layers, they get converted to groups anyway; use groups only, from the outset.
 
 * To make a shape suitable for a font, convert it to a single path (sometimes dubbed a 'compound path').
   SVG doesn't have a formal concept of compound paths, but vector editors frequently have. When constructing
