@@ -51,8 +51,8 @@ fonts.**
 ## How SvgTtf does what it does
 
 * There's a [W3C recommendation for defining fonts inside SVG files](http://www.w3.org/TR/SVG/fonts.html).
-* Unfortunately, there seem to be no (good) editors for SVG fonts.
-* But there are editors for SVG files, Inkscape and Adobe Illustrator being two.
+* Unfortunately, there seem to be no (good) editors for SVG font shapes.
+* But there *are* editors for ordinary SVG vector shapes (Inkscape and Adobe Illustrator being two).
 * SvgTtf takes one or more SVG files with ordinary outlines ('path' elements) and converts the outlines
   into SVG font glyph outlines (this primarily means scaling, translating, and mirroring paths to adapt
   them to the SVG font glyph coordinate system).
@@ -78,20 +78,28 @@ started, you may want to open `svgttf/art/svgttf-font-sample.svg` with a program
 and take a closer look; it's probably a good idea to use that file as a starting point for your own
 design sheet.
 
-Here are the pertinent restrictions for a SvgTtf-compatible SVG design sheet:
+Here are the pertinent constraints for a SvgTtf-compatible SVG design sheet:
 
 * SvgTtf will only look at `<path/>` elements that are placed directly inside the `<svg>...</svg>` root
   element.
 * This means if you want to hide a path element from SvgTtf, you should put it inside an SVG
   group element, `<g>...</g>`.
-* Outlines are places inside a square grid which is currently configured to be 36 pixels wide; the four
-  topmost and leftmost rows and columns of the grid are margins (in the sample sheet, the margins are used
-  for codepoint indicators, but those are purely informative and not read by SvgTtf).
+* Outlines are places inside a square grid which is currently configured to be 36 (purely imaginary) pixels
+  wide;
+* the four topmost and leftmost rows and columns of the grid are margins (in the sample sheet, the
+  margins are used for codepoint indicators, but those are purely informative and not read by SvgTtf).
 * For ease of working, i have decided to put 256 cells into a single sheet, arranged in 16 rows with 16
   cells each; also, there are two groups with 8 rows separated by one row for codepoint indicators.
 * In order to decide in which cell a given outline is placed, SvgTtf collects the coordinates of all the
-  nodes (the 'corner points', as it were) of the outline and calculates the arithmetic mean. Very simple,
-  but this means that an abberant shape *may* get misplaced.
+  nodes (the 'corner points', as it were) of the outline and calculates the arithmetic mean.
+* For fonts with more than 256 glyphs, either extend the grid pattern downwards or use extra files.
+* Each font source file **must** be names as `NNNNNN-XXXX.svg`, where the `NNNNNN` part represents the
+  font's name (possibly with hyphens; i always avoid to use spaces for such things) and `XXXX` the
+  hexadecimal notation for the Unicode codepoint (CID) of the first cell in the first row of the sheet.
+* Currently, you should put a fallback shape for intermediary unused codepoints to the left and above
+  the first ordinary glyph in one of your sheets (this is used to fill up all the unused spaces, as borne
+  out by the screenshots above. Expect some changes here; for now it just works).
+
 
 ## Motivation
 
