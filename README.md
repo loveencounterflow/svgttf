@@ -191,7 +191,9 @@ The result opened in FontForge:
 
 These shapes i use to describe the structure of Chinese / Japanese / Korean ('Ideographic') characters; the
 part shown contains stuff i need to rare / strange / archaic / astral characters like 𧪺, 𦴞, 𠉙, 𧀍, 𢕉, 𥻔, 𠔇,
-𠅂, 𠴿, 𢃵, 𡩪, 𥤅, 𤜓, 𤔬, 𤕋, 𥡼, 𦌖, 𦪴, 𦪺, 𦍛, 𪛄 and so on.
+𠅂, 𠴿, 𢃵, 𡩪, 𥤅, 𤜓, 𤔬, 𤕋, 𥡼, 𦌖, 𦪴, 𦪺, 𦍛, 𪛄 and so on. Here's the stuff in action:
+
+![](https://github.com/loveencounterflow/svgttf/raw/master/art/Screen%20Shot%202014-10-04%20at%2003.52.13.jpg)
 
 
 
