@@ -16,6 +16,10 @@ SVG design sheet—here we draw the glyph shapes:
 
 ![](https://github.com/loveencounterflow/svgttf/raw/master/art/jizura3-e000.png)
 
+This is what a SVG→TTF conversion may look like:
+
+![](https://github.com/loveencounterflow/svgttf/raw/master/art/Screen%20Shot%202014-10-04%20at%2002.31.03.jpg)
+
 The resulting TTF font opened in FontForge—ready for any post-processing:
 
 ![](https://github.com/loveencounterflow/svgttf/raw/master/art/Screen%20Shot%202014-10-04%20at%2002.10.12.jpg)
