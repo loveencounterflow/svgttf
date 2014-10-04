@@ -111,12 +111,17 @@ fonts.**
 
 ## How to structure your SVG design sheet, organize your workflow, keep on top of things and become a better person
 
-In order to keep things simple, i took a few shortcuts that match my specific needs. In order to get
-started, you may want to open `svgttf/art/svgttf-font-sample.svg` with a program of your preference
-and take a closer look; it's probably a good idea to use that file as a starting point for your own
-design sheet.
+In order to keep things simple, i have taken a few shortcuts when writing SvgTtf that match my specific
+needs, which means that SvgTtf lacks features like variable glyph widths or easily extended options. In
+fact, in this early version, you can only convert from SVG to TTF and you'll have to (fork and) edit
+`src/main.coffee` (or `lib/main.js`) to make even simple changes such as changing the design grid
+size or the font's em size.
 
-Here are the pertinent constraints for a SvgTtf-compatible SVG design sheet:
+In order to get started with your own design, you may want to open `svgttf/art/svgttf-font-sample.svg` with
+a program of your preference and take a closer look; it's probably a good idea to use that file as a
+starting point for your own design sheet.
+
+Here are some important points to be aware of:
 
 
 * SvgTtf will only look at `<path/>` elements that are placed directly inside the `<svg>...</svg>` root
