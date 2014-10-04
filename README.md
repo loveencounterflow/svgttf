@@ -44,7 +44,7 @@ node svgttf/lib/main.js svgttf/art svgttf-sample-font svg /tmp ttf
 fonts.**
 
 > There's no need to buy and / or install a font editor in case the very reduced functionalities of SvgTtf
-> is enough for your project. That said, FontForge (a free editor that is easily installed—OSX users can
+> are enough for your project. That said, FontForge (a free editor that is easily installed—OSX users can
 > download a precompiled app; you need XQuartz for it to run) can be used to fill out the details in generated
 > font files (with the caveat that you will have to repeat that process each time you've generated a new
 > version of your font—but i believe there are command line tools to help you with that, too).
@@ -124,26 +124,29 @@ Here are the pertinent constraints for a SvgTtf-compatible SVG design sheet:
 
 * **When starting from scratch and exporting to SVG in Illustrator, make sure to open the so-called
   'advanced' options in the SVG options dialog. There, set the Decimal Places settings to something like,
-  say, 5 or higher. Otherwise, Illustrator will fall back to a single deximal place, which will likely
-  damage your artwork.** Also, i think selecting 'Include Slicing Data' is a good idea.
+  say, 5 or higher. Otherwise, Illustrator will fall back to a single decimal place, which will likely
+  damage your artwork** (think 'ouch. bricks.'). Also, i think selecting 'Include Slicing Data' is a good
+  idea.
 
 * It's probably a good idea to keep close tabs on your artwork to avoid regressions. Work on copies until
   your workflow has settled or use `git` extensively. **SVG editors are very good in obeying your each
   and every whim until the precise moment you save and close the application, only to find out that some
   features were not stored and others got damaged.** Try and err until you feel safe. It took me 10 hours
   of creating, opening, changing, closing, re-opening, swearing, and trying one more time to arrive at
-  the `svgttf/art/svgttf-font-sample.svg` format, just as long as inventing and writing version 0.0.1 of
-  SvgTtf itself.
+  the (as such simple) `svgttf/art/svgttf-font-sample.svg` format, just as long as inventing and writing
+  version 0.0.1 of SvgTtf itself.
 
 
 
 ## Motivation
 
-When wanting to design a font, there are a couple of things that really annoy me:
+When wanting to design a font, there are a couple of things that have been really annoying to me for years:
 
 * Good font editors are as rare as free font editors; **good *and* free font editors do not exist**
 * with the one possible exception of [FontForge](http://fontforge.org/),
-* which has an amazing amount of features and generally prodcues correct outputs,
+* which is free & open *and* cross-platform
+* and has an amazing amount of features
+* and generally produces correct outputs,
 * **but** has a user interface dating back to the (methinks) 1890s (or so it feels).
 * Generally, some font editors are good for editing font-specific stuff such as hinting or ligatures
 * **but they all suck when it comes to define outlines by manipulating and combining nodes and splines**.
