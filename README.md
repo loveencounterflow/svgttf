@@ -43,24 +43,32 @@ machine that i had installed with [Vagrant](https://www.vagrantup.com/):
 sudo chown -R vagrant:vagrant /usr/local
 sudo apt-get install git make curl
 git clone https://github.com/visionmedia/n
-curl -L http://npmjs.org/install.sh | sh
-npm install svgttf
 cd n
 make install
 n stable
+curl -L http://npmjs.org/install.sh | sh
+npm install svgttf
 node svgttf/lib/main.js -f svgttf/art svgttf-sample-font svg /tmp ttf
 ```
 
+Just saying this because it's great how simple installing things *can* be (in this case you do have to
+remember a few kitchen tricks, but i've seen worse procedures).
+
+Once installed, use SvgTtf like this:
 
 ```bash
 svgttf [-f] <input-directory> <font-name> <input-format> <output-directory> <output-format>
 ```
 
-Caveat: binary currently not working, but this runs fine:
+**Caveat**: binary currently not working, but this runs fine:
+
+Do
 
 ```bash
-node svgttf/lib/main.js svgttf/art svgttf-sample-font svg /tmp ttf
+node svgttf/lib/main.js --help
 ```
+
+to get some hints on what works in the current version.
 
 ## What SvgTtf does
 
