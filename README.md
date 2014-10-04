@@ -52,11 +52,30 @@ fonts.**
 
 ## What SvgTtf does not do
 
-*
+* There's no concept of metadata (except for the font display name, which equals the font family name and
+  the filename).
+* There's (currently) no notion of character widths, no ligatures, no tricks, nothing. Each glyph will have
+  the same (square) dimensions. This is all i need for now.
+
 
 ## How to structure your SVG design sheet
 
-In order to keep things simple, i took a few shortcuts on how
+In order to keep things simple, i took a few shortcuts that match my specific needs. In order to get
+started, you may want to open `svgttf/art/svgttf-font-sample.svg` with a program of your preference
+and take a closer look; it's probably a good idea to use that file as a starting point for your own
+design sheet.
+
+Here are the pertinent restrictions for a SvgTtf-compatible SVG design sheet:
+
+* SvgTtf will only look at `<path/>` elements that are placed directly inside the `<svg>...</svg>` root
+  element.
+* This means if you want to hide a path element from SvgTtf, you should put it inside an SVG
+  group element, `<g>...</g>`.
+* Outlines are places inside a square grid which is currently configured to be 36 pixels wide; the four
+  topmost and leftmost rows and columns of the grid are margins (in the sample sheet, the margins are used
+  for codepoint indicators, but those are purely informative and not read by SvgTtf).
+* For ease of working, i have decided to put 256 cells into a single sheet, arranged in 16 rows with 16
+  cells each; also, there are two groups with 8 rows separated by one row for codepoint indicators.
 
 
 ## Motivation
