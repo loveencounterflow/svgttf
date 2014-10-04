@@ -23,7 +23,7 @@ The resulting TTF font opened in FontForge—ready for any post-processing:
 Command line syntax:
 
 ```bash
-  Usage: svgttf [-f] <input-directory> <font-name> <input-format> <output-directory> <output-format>
+svgttf [-f] <input-directory> <font-name> <input-format> <output-directory> <output-format>
 ```
 
 Caveat: binary currently not working, but this runs fine:
