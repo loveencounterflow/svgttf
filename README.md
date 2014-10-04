@@ -1,6 +1,7 @@
 
 
 - [SvgTtf](#svgttf)
+	- [Installation and Command line syntax:](#installation-and-command-line-syntax)
 	- [What SvgTtf does](#what-svgttf-does)
 	- [How SvgTtf does what it does](#how-svgttf-does-what-it-does)
 	- [What SvgTtf does not do](#what-svgttf-does-not-do)
@@ -26,7 +27,30 @@ The resulting TTF font opened in FontForge—ready for any post-processing:
 ![](https://github.com/loveencounterflow/svgttf/raw/master/art/Screen%20Shot%202014-10-04%20at%2002.10.12.jpg)
 
 
-Command line syntax:
+## Installation and Command line syntax:
+
+Installation is as easy as
+
+```bash
+npm install svgttf
+```
+
+in case you already have NodeJS. In case you haven't got it already, this is approximately what i did
+to get all of `n` (node version manager), `node`, `npm`, and `svgttf` installed on a fresh virtual
+machine that i had installed with [Vagrant](https://www.vagrantup.com/):
+
+```bash
+sudo chown -R vagrant:vagrant /usr/local
+sudo apt-get install git make curl
+git clone https://github.com/visionmedia/n
+curl -L http://npmjs.org/install.sh | sh
+npm install svgttf
+cd n
+make install
+n stable
+node svgttf/lib/main.js -f svgttf/art svgttf-sample-font svg /tmp ttf
+```
+
 
 ```bash
 svgttf [-f] <input-directory> <font-name> <input-format> <output-directory> <output-format>
@@ -155,14 +179,16 @@ When wanting to design a font, there are a couple of things that have been reall
   option available, which really sucks. Then again, the vector editing capabilities of Inkscape are way
   better than those of most if not all available font editors, free or non-free.
 
-So i've been using a (free trial edition of) Adobe Illustrator (dubbed 'Creative Cloud', which acc. to Adobe
-is Latin for 'we'll call and talk to like next to every server there is in the world when you install the
-app, whenever you save something, and whenever you re-open it') and Inkscape to produce my glyph
-outlines—simply because it works. My workflow for some years has been like this:
+So i've been using a (free, 30-days trial edition of) Adobe Illustrator (dubbed 'Creative Cloud', which acc.
+to Adobe is Latin for 'we'll call and talk to like next to every server there is in the world when you
+install the app, whenever you save something, and whenever you re-open it') which will expire soon and
+will fall back to Inkscape after that.
 
-**1.** Open the `*.sfd` (i.e. FontForge) file for the target font in FontForge.
+My workflow for some years has been like this:
 
-**2.** Open the design SVG file in the vector editor;
+**1.** I open the `*.sfd` (i.e. FontForge) file for the target font in FontForge, then
+
+**2.** i open the design SVG file in the vector editor;
 
 **3.** make changes to some shapes.
 
@@ -173,7 +199,8 @@ outlines—simply because it works. My workflow for some years has been like thi
   **4.3.** from the sub-window that opens, open the `import` dialog, where i navigate to the transport file
     and select it, whereupon
   **4.4.** the preview for the new glyph appears.
-  **4.5.** i can now save the `*.sfd` and generate a `*.ttf` font file.
+
+**5.** i can now save the `*.sfd` and generate a `*.ttf` font file.
 
 This process is as time consuming as it is boring and prone to errors.
 
