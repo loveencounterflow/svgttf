@@ -14,6 +14,8 @@
 
 ![](https://github.com/loveencounterflow/svgttf/raw/master/art/jizura3-e000.png)
 
+![](https://github.com/loveencounterflow/svgttf/raw/master/art/Screen%20Shot%202014-10-04%20at%2002.10.12.jpg)
+
 ```bash
   Usage: svgttf [-f] <input-directory> <font-name> <input-format> <output-directory> <output-format>
 ```
