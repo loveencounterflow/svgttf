@@ -191,9 +191,7 @@ When wanting to design a font, there are a couple of things that have been reall
   option available, which really sucks. Then again, the vector editing capabilities of Inkscape are way
   better than those of most if not all available font editors, free or non-free.
 
-> So i've been using a (free, 30-days trial edition of) Adobe Illustrator (dubbed 'Creative Cloud', which acc.
-> to Adobe is Latin for 'we'll call and talk to like next to every server there is in the world when you
-> install the app, whenever you save something, and whenever you re-open it') which will expire soon and
+> So i've been using a (free, 30-days trial edition of) Adobe Illustrator which will expire soon and
 > will fall back to Inkscape after that.
 >
 > My workflow for some years has been like this:
