@@ -139,20 +139,24 @@ Here are some important points to be aware of:
   mis-interpreted even if the better part of its *area* is inside the target cell.
 
 * For ease of working, i have decided to put 256 cells into a single sheet, arranged in 16 rows with 16
-  cells each; also, there are two groups with 8 rows separated by one row for codepoint indicators.
+  cells each; also, there are two groups of 8 rows separated by one more row for codepoint indicators.
 
-* The four topmost and leftmost rows and columns of the grid are margins (in the sample sheet, the
+* The four topmost rows and four leftmost columns of the grid are margins (in the sample sheet, the
   margins are used for codepoint indicators, but those are purely informative and not read by SvgTtf).
+
+* Currently, you should put a fallback shape for intermediary unused codepoints to the left and above
+  the first ordinary glyph in one of your sheets (this is used to fill up all the unused spaces, as borne
+  out by the screenshots above. Expect some changes here; for now it just works).
+
+* Feel free to apply fancy colors or pattern fills to your objects, like i used a white fill for the
+  fallback glyph shown in the first screenshot above. All those attributes are discarded during conversion
+  to a font.
 
 * For fonts with more than 256 glyphs, either extend the grid pattern downwards or use extra files.
 
 * Each font source file **must** be named as `NNNNNN-XXXX.svg`, where the `NNNNNN` part represents the
   font's name (possibly with hyphens; i always avoid to use spaces for such things) and `XXXX` the
   hexadecimal notation for the Unicode codepoint (CID) of the first cell in the first row of the sheet.
-
-* Currently, you should put a fallback shape for intermediary unused codepoints to the left and above
-  the first ordinary glyph in one of your sheets (this is used to fill up all the unused spaces, as borne
-  out by the screenshots above. Expect some changes here; for now it just works).
 
 * Unfortunately, SVG does not support 'layers' and 'locked objects' which means that you **(1)** must use
   groups to emulate layers, and **(2)** you'll probably want to click on the background and lock it in
