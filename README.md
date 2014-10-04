@@ -88,16 +88,18 @@ Here are the pertinent constraints for a SvgTtf-compatible SVG design sheet:
   group element, `<g>...</g>`.
 
 * Outlines are places inside a square grid which is currently configured to be 36 (purely imaginary) pixels
-  wide;
+  wide.
 
-* the four topmost and leftmost rows and columns of the grid are margins (in the sample sheet, the
-  margins are used for codepoint indicators, but those are purely informative and not read by SvgTtf).
+* In order to decide in which cell a given outline is placed, SvgTtf collects the coordinates of all the
+  nodes (the 'corner points', as it were) of the outline and calculates the arithmetic mean. This means
+  that the CID a shape with a lot of corner points outside of the intended target cell will be
+  mis-interpreted even if the beter part of its area is inside the target cell.
 
 * For ease of working, i have decided to put 256 cells into a single sheet, arranged in 16 rows with 16
   cells each; also, there are two groups with 8 rows separated by one row for codepoint indicators.
 
-* In order to decide in which cell a given outline is placed, SvgTtf collects the coordinates of all the
-  nodes (the 'corner points', as it were) of the outline and calculates the arithmetic mean.
+* The four topmost and leftmost rows and columns of the grid are margins (in the sample sheet, the
+  margins are used for codepoint indicators, but those are purely informative and not read by SvgTtf).
 
 * For fonts with more than 256 glyphs, either extend the grid pattern downwards or use extra files.
 
@@ -108,6 +110,29 @@ Here are the pertinent constraints for a SvgTtf-compatible SVG design sheet:
 * Currently, you should put a fallback shape for intermediary unused codepoints to the left and above
   the first ordinary glyph in one of your sheets (this is used to fill up all the unused spaces, as borne
   out by the screenshots above. Expect some changes here; for now it just works).
+
+* Unfortunately, SVG does not support 'layers' and 'locked objects' which means that you **(1)** must use
+  groups to emulate layers, and **(2)** you'll probably want to click on the background and lock it in
+  the editor, first thing after opening a design sheet (the locking is retained as long as you keep the
+  file open, but is not saved to SVG).
+
+* What's more (or, rather less), SVG doesn't support grids, either. I found that in Illustrator, defining a
+  default grid and making the document size an integer multiple of the grid module works best. Make it so
+  the grid lines and the top left edge of the sheet coincide.
+
+* **When starting from scratch and exporting to SVG in Illustrator, make sure to open the so-called
+  'advanced' options in the SVG options dialog. There, set the Decimal Places settings to something like,
+  say, 5 or higher. Otherwise, Illustrator will fall back to a single deximal place, which will likely
+  damage your artwork.** Also, i think selecting 'Include Slicing Data' is a good idea.
+
+* It's probably a good idea to keep close tabs on your artwork to avoid regressions. Work on copies until
+  your workflow has settled or use `git` extensively. **SVG editors are very good in obeying your each
+  and every whim until the precise moment you save and close the application, only to find out that some
+  features were not stored and others got damaged.** Try and err until you feel safe. It took me 10 hours
+  of creating, opening, changing, closing, re-opening, swearing, and trying one more time to arrive at
+  the `svgttf/art/svgttf-font-sample.svg` format, just as long as inventing and writing version 0.0.1 of
+  SvgTtf itself.
+
 
 
 ## Motivation
