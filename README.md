@@ -155,7 +155,9 @@ When wanting to design a font, there are a couple of things that have been reall
   option available, which really sucks. Then again, the vector editing capabilities of Inkscape are way
   better than those of most if not all available font editors, free or non-free.
 
-So i've been using a (free trial edition of) Adobe Illustrator and Inkscape to produce my glyph
+So i've been using a (free trial edition of) Adobe Illustrator (dubbed 'Creative Cloud', which acc. to Adobe
+is Latin for 'we'll call and talk to like next to every server there is in the world when you install the
+app, whenever you save something, and whenever you re-open it') and Inkscape to produce my glyph
 outlines—simply because it works. My workflow for some years has been like this:
 
 **1.** Open the `*.sfd` (i.e. FontForge) file for the target font in FontForge.
