@@ -172,8 +172,10 @@ Here are the pertinent constraints for a SvgTtf-compatible SVG design sheet:
   the (as such simple) format of the sample sheet (`svgttf/art/svgttf-font-sample.svg`), just as long as
   inventing and writing version 0.0.1 of SvgTtf itself.
 
-* When working with Inkscape, keep drawing structure as simple as possible as the program sorely lacks an
-  object overview.
+* When working with Inkscape, keep the overall structure of your SVG document as simple as possible as the
+  program sorely lacks an object overview.
+
+* Do not use layers; they get converted to groups anyway so use groups only from the outset.
 
 * To make a shape suitable for a font, convert it to a single path (sometimes dubbed a 'compound path').
   SVG doesn't have a formal concept of compound paths, but vector editors frequently have. When constructing
@@ -187,7 +189,7 @@ Here are the pertinent constraints for a SvgTtf-compatible SVG design sheet:
   usually the codepoints reported should be the ones that need some merging action). When in doubt, i always
   mark all objects in the affected cells, bring them to topmost position (i.e. z-axis) and have a look into
   the layers / objects palette (sadly, not an option in Inkscape, the little beast that would as it should
-  if it just could).
+  if it only could).
 
 
 ## Motivation
