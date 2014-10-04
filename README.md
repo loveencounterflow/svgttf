@@ -172,6 +172,22 @@ Here are the pertinent constraints for a SvgTtf-compatible SVG design sheet:
   the (as such simple) format of the sample sheet (`svgttf/art/svgttf-font-sample.svg`), just as long as
   inventing and writing version 0.0.1 of SvgTtf itself.
 
+* When working with Inkscape, keep drawing structure as simple as possible as the program sorely lacks an
+  object overview.
+
+* To make a shape suitable for a font, convert it to a single path (sometimes dubbed a 'compound path').
+  SVG doesn't have a formal concept of compound paths, but vector editors frequently have. When constructing
+  from rectangles and ellipes, convert them to generic paths; when using overlapping paths, use 'combine' or
+  'union' options to fuse the shapes together and remove overlaps. In order to get a shape with 'holes',
+  place a smaller shape on top of a larger one and use a 'substract' option.
+
+* When `svgttf` complains about repeated codepoints, then either some of your shapes are extending too much
+  outside their proper grid cell (which is easy to see) *or* you may have inadvertently put several paths
+  next to each other before fusing them into a single compound path (much harder to spot visually, but
+  usually the codepoints reported should be the ones that need some merging action). When in doubt, i always
+  mark all objects in the affected cells, bring them to topmost position (i.e. z-axis) and have a look into
+  the layers / objects palette (sadly, not an option in Inkscape, the little beast that would as it should
+  if it just could).
 
 
 ## Motivation
