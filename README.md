@@ -29,7 +29,7 @@ svgttf [-f] <input-directory> <font-name> <input-format> <output-directory> <out
 Caveat: binary currently not working, but this runs fine:
 
 ```bash
-node svgttf/lib/main.js -f svgttf/art svgttf-sample-font svg /tmp ttf
+node svgttf/lib/main.js svgttf/art svgttf-sample-font svg /tmp ttf
 ```
 
 ## What SvgTtf does
@@ -55,7 +55,7 @@ fonts.**
 * SvgTtf looks where each outline is located on a design sheet and uses the position, a metrics configuration
   (for the grid into which to place outlines) and the input filename to compute the desired target position
   (so when a file is called `xxx-ab00.svg`  and a given path sits in the fourth cell of the first row that
-  means the intended target is Unicode CID U+AB04).
+  means the intended target is Unicode CID U+AB04 in a font called `xxx.ttf`).
 * SvgTtf then uses [svg2ttf](https://github.com/fontello/svg2ttf) to turn the SVG font source XML into
   a TTF binary target represention and write that into a `*.ttf` file.
 
@@ -85,7 +85,9 @@ Here are the pertinent restrictions for a SvgTtf-compatible SVG design sheet:
   for codepoint indicators, but those are purely informative and not read by SvgTtf).
 * For ease of working, i have decided to put 256 cells into a single sheet, arranged in 16 rows with 16
   cells each; also, there are two groups with 8 rows separated by one row for codepoint indicators.
-
+* In order to decide in which cell a given outline is placed, SvgTtf collects the coordinates of all the
+  nodes (the 'corner points', as it were) of the outline and calculates the arithmetic mean. Very simple,
+  but this means that an abberant shape *may* get misplaced.
 
 ## Motivation
 
