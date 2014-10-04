@@ -12,14 +12,21 @@
 
 # SvgTtf
 
+SVG design sheet—here we draw the glyph shapes:
+
 ![](https://github.com/loveencounterflow/svgttf/raw/master/art/jizura3-e000.png)
 
+The resulting TTF font opened in FontForge—ready for any post-processing:
+
 ![](https://github.com/loveencounterflow/svgttf/raw/master/art/Screen%20Shot%202014-10-04%20at%2002.10.12.jpg)
+
+Command line syntax:
 
 ```bash
   Usage: svgttf [-f] <input-directory> <font-name> <input-format> <output-directory> <output-format>
 ```
 
+Caveat: binary currently not working, but this runs fine:
 
 ```bash
 node svgttf/lib/main.js -f svgttf/art svgttf-sample-font svg /tmp ttf
