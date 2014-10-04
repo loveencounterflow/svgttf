@@ -114,7 +114,7 @@ fonts.**
 In order to keep things simple, i have taken a few shortcuts when writing SvgTtf that match my specific
 needs, which means that SvgTtf lacks features like variable glyph widths or easily extended options. In
 fact, in this early version, you can only convert from SVG to TTF and you'll have to (fork and) edit
-`src/main.coffee` (or `lib/main.js`) to make even simple changes such as changing the design grid
+`src/main.coffee` (or `lib/main.js`) even to make trivial changes such as changing the design grid
 size or the font's em size.
 
 In order to get started with your own design, you may want to open `svgttf/art/svgttf-font-sample.svg` with
