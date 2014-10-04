@@ -135,8 +135,8 @@ Here are some important points to be aware of:
 
 * In order to decide in which cell a given outline is placed, SvgTtf collects the coordinates of all the
   nodes (the 'corner points', as it were) of the outline and calculates the arithmetic mean. This means
-  that the CID a shape with a lot of corner points outside of the intended target cell will be
-  mis-interpreted even if the beter part of its area is inside the target cell.
+  that the CID a shape with a lot of *points* outside of the intended target cell will be
+  mis-interpreted even if the better part of its *area* is inside the target cell.
 
 * For ease of working, i have decided to put 256 cells into a single sheet, arranged in 16 rows with 16
   cells each; also, there are two groups with 8 rows separated by one row for codepoint indicators.
