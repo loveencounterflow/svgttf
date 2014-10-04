@@ -169,8 +169,8 @@ Here are the pertinent constraints for a SvgTtf-compatible SVG design sheet:
   and every whim until the precise moment you save and close the application, only to find out that some
   features were not stored and others got damaged.** Try and err until you feel safe. It took me 10 hours
   of creating, opening, changing, closing, re-opening, swearing, and trying one more time to arrive at
-  the (as such simple) `svgttf/art/svgttf-font-sample.svg` format, just as long as inventing and writing
-  version 0.0.1 of SvgTtf itself.
+  the (as such simple) format of the sample sheet (`svgttf/art/svgttf-font-sample.svg`), just as long as
+  inventing and writing version 0.0.1 of SvgTtf itself.
 
 
 
@@ -180,7 +180,7 @@ When wanting to design a font, there are a couple of things that have been reall
 
 * Good font editors are as rare as free font editors; **good *and* free font editors do not exist**
 * with the one possible exception of [FontForge](http://fontforge.org/),
-* which is free & open *and* cross-platform
+* which is free & open & cross-platform
 * and has an amazing amount of features
 * and generally produces correct outputs,
 * **but** has a user interface dating back to the (methinks) 1890s (or so it feels).

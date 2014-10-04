@@ -1,7 +1,7 @@
 {
   "name": "svgttf",
   "version": "0.0.10",
-  "description": "NodeJS library to convert Illustrator or Inkscape desgin sheets to SVG and TTF fonts",
+  "description": "NodeJS library to convert Illustrator or Inkscape SVG drawings to SVG and TTF fonts",
   "main": "lib/main.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
