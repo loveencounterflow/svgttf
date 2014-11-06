@@ -20,6 +20,7 @@ xpath                     = require 'xpath'
 CHR                       = require 'coffeenode-chr'
 TRM                       = require 'coffeenode-trm'
 TEXT                      = require 'coffeenode-text'
+TYPES                     = require 'coffeenode-types'
 rpr                       = TRM.rpr.bind TRM
 badge                     = 'svg2ttf/svg-to-svg-font'
 log                       = TRM.get_logger 'plain',   badge
@@ -52,6 +53,8 @@ em_size   = 4096
 options =
   ### Coordinates of first glyph outline: ###
   'offset':           [ module * 4, module * 4, ]
+  ### Ad hoc correction: ###
+  'correction':       [ 0, module * 0.025, ]
   ### Size of grid and font design size: ###
   'module':           module
   # 'scale':            256 / module
@@ -84,6 +87,7 @@ options[ 'scale' ] = em_size / module
   min_cid         = +Infinity
   max_cid         = -Infinity
   font_name       = settings[ 'font-name' ]
+  correction      = options[ 'correction' ]
   info "reading files for font #{rpr font_name}"
   #.........................................................................................................
   for route in input_routes
@@ -99,8 +103,23 @@ options[ 'scale' ] = em_size / module
     whisper "#{filename}: found #{paths.length} outlines"
     #.......................................................................................................
     for path in paths
-      d             = path.getAttribute 'd'
-      path          = ( new SvgPath d ).abs()
+      #.....................................................................................................
+      if ( transform = path.getAttribute 'transform' )? and transform.length > 0
+        match         = transform.match /^translate\(([-+.0-9]+),([-+.0-9]+)\)$/
+        throw new Error "unable to parse transform #{rpr transform}" unless match?
+        [ _, x, y, ]  = match
+        x             = parseFloat x, 10
+        y             = parseFloat y, 10
+        unless ( TYPES.isa_number x ) and ( TYPES.isa_number y )
+          throw new Error "unable to parse transform #{rpr transform}"
+        transform     = [ 'translate', x, y ]
+      #.....................................................................................................
+      else
+        transform     = null
+      #.....................................................................................................
+      path          = ( new SvgPath path.getAttribute 'd' ).abs()
+      path          = path.translate  transform[ 1 ],  transform[ 2 ] if  transform?
+      path          = path.translate correction[ 0 ], correction[ 1 ] if correction?
       center        = @center_from_absolute_path path
       [ x, y, ]     = center
       x            -= options[ 'offset' ][ 0 ]
@@ -112,6 +131,7 @@ options[ 'scale' ] = em_size / module
       cid           = cid0 + actual_row * options[ 'row-length' ] + col
       dx            = - ( col * options[ 'module' ] ) - options[ 'offset' ][ 0 ]
       dy            = - ( row * options[ 'module' ] ) - options[ 'offset' ][ 1 ]
+      #.....................................................................................................
       path          = path
         .translate  dx, dy
         .scale      1, -1
@@ -146,7 +166,7 @@ options[ 'scale' ] = em_size / module
   #.........................................................................................................
   if glyph_count is 0
     warn "no glyphs found; terminating"
-    return null
+    process.exit 1
   #.........................................................................................................
   for cid in [ min_cid .. max_cid ]
     unless glyphs[ cid ]?

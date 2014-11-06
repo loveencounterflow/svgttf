@@ -130,8 +130,10 @@ Here are some important points to be aware of:
 * This means if you want to hide a path element from SvgTtf, you should put it inside an SVG
   group element, `<g>...</g>`.
 
-* Outlines are places inside a square grid which is currently configured to be 36 (purely imaginary) pixels
-  wide.
+* Each outline should be placed inside one cell of a square grid which is currently configured to be 36
+  (purely imaginary) pixels wide. I chose a round, mid-sized number to ensure good results (display size and
+  zoomability) on viewers. Illustrator equates 864px with 304.8mm; when you do the math that's 72ppi,
+  probably a completely meaningless value for the purpose at hand.
 
 * In order to decide in which cell a given outline is placed, SvgTtf collects the coordinates of all the
   nodes (the 'corner points', as it were) of the outline and calculates the arithmetic mean. This means
