@@ -3,6 +3,7 @@
 **Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
 
 - [SvgTtf](#svgttf)
+  - [Update: Coping With XeLaTex /](#update-coping-with-xelatex-)
   - [Installation and Command line syntax:](#installation-and-command-line-syntax)
   - [What SvgTtf does](#what-svgttf-does)
   - [How SvgTtf does what it does](#how-svgttf-does-what-it-does)
@@ -41,6 +42,28 @@ The resulting TTF font opened in FontForge—ready for any post-processing:
 
 ![](https://github.com/loveencounterflow/svgttf/raw/master/art/Screen%20Shot%202014-10-04%20at%2002.10.12.jpg)
 
+## Update: Coping With XeLaTex /
+
+Turns out the present toolchain doesn't produce a 100% perfect font. More precisely,
+it would appear the resulting `*.ttf` file is good enough for TeX Live 2014, but may cause
+
+```
+Segmentation fault (core dumped)
+```
+
+or a less-than-obvious notice about some 'internal error 11'. The solution is to use
+[FontForge]() to read in the font file and write it out again; for details, see the
+[answer to 'How to validate a font to be used with XeLaTeX, fontspec'
+on tex.stackexchange.com](http://tex.stackexchange.com/a/270938/28067). A minimal FontForge
+script to do this repair would be
+
+```
+#!/usr/local/bin/fontforge -lang=ff
+# Note: the above is for a Homebrew-installed FF on OSX
+# use /usr/bin/fontforge on most Linuxes.
+Open($1);
+Generate($1);
+```
 
 ## Installation and Command line syntax:
 
