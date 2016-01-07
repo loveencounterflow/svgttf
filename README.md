@@ -1,3 +1,18 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
+
+- [SvgTtf](#svgttf)
+  - [Installation and Command line syntax:](#installation-and-command-line-syntax)
+  - [What SvgTtf does](#what-svgttf-does)
+  - [How SvgTtf does what it does](#how-svgttf-does-what-it-does)
+  - [What SvgTtf does not do](#what-svgttf-does-not-do)
+  - [How to structure your SVG design sheet, organize your workflow, keep on top of things and become a better person](#how-to-structure-your-svg-design-sheet-organize-your-workflow-keep-on-top-of-things-and-become-a-better-person)
+  - [Motivation](#motivation)
+  - [BONUS: SVGTTF IN PRODUCTION!](#bonus-svgttf-in-production)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 
 
 - [SvgTtf](#svgttf)

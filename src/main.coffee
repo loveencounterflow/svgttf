@@ -54,7 +54,7 @@ options =
   ### Coordinates of first glyph outline: ###
   'offset':           [ module * 4, module * 4, ]
   ### Ad hoc correction: ###
-  'correction':       [ 0, module * 0.025, ]
+  'correction':       [ 0, module * 0.075, ]
   ### Size of grid and font design size: ###
   'module':           module
   # 'scale':            256 / module
@@ -206,10 +206,11 @@ options[ 'scale' ] = em_size / module
   node_count  = path.length
   sum_x       = 0
   sum_y       = 0
+  # debug '©4e1', path
   for [ x, y, ] in path
     throw new Error "found undefined points in path" unless x? and y?
-    sum_x += x
-    sum_y += y
+    sum_x += x # if x?
+    sum_y += y # if y?
   return [ sum_x / node_count, sum_y / node_count, ]
 
 #-----------------------------------------------------------------------------------------------------------
