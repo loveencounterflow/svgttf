@@ -206,7 +206,6 @@ options[ 'scale' ] = em_size / module
   node_count  = path.length
   sum_x       = 0
   sum_y       = 0
-  # debug '©4e1', path
   for [ x, y, ] in path
     throw new Error "found undefined points in path" unless x? and y?
     sum_x += x # if x?
@@ -223,6 +222,7 @@ options[ 'scale' ] = em_size / module
     ### Ignore closepath command: ###
     continue if /^[zZ]$/.test command
     #.......................................................................................................
+    # urge '©99052', node
     throw new Error "unknown command #{rpr command} in path #{rpr path}" unless /^[MLHVCSQTA]$/.test command
     #.......................................................................................................
     switch command
@@ -250,9 +250,22 @@ options[ 'scale' ] = em_size / module
           [ x, y, ] = [ xy[ idx + 2 ], xy[ idx + 3 ], ]
           R.push [ x, y, ]
       #.....................................................................................................
+      when 'Q'
+        warn rpr path
+        throw new Error """
+          quadratic splines (SVG path commands `q` and `Q` not yet supported; in case you're
+          working with Inkscape, identify the offending path and nudge one of its control points
+          slightly and save the document; this will cause Inkscape to convert the outline to a
+          cubic spline.
+
+          see http://inkscape.13.x6.nabble.com/Quadratic-beziers-td2856790.html"""
+      #.....................................................................................................
       else
-        [ x, y, ] = [ null, null, ]
-        R.push [ x, y, ]
+        warn rpr path
+        throw new Error "unknown command #{rpr command} in path"
+        # help [ null, null, ]
+        # [ x, y, ] = [ null, null, ]
+        # R.push [ x, y, ]
     #.......................................................................................................
     last_x = x
     last_y = y
