@@ -2,7 +2,7 @@
     # "coffee-script": "^1.8.0",
     # "coffeenode-chr": "^0.1.3",
     # "coffeenode-teacup": "0.0.17",
-    # "coffeenode-trm": "^0.1.20",
+    # "coffeenode-CND": "^0.1.20",
     # "glob": "^4.0.6",
     # "svgpath": "~ 1.0.0",
     # "xmldom-silent": "~ 0.1.16",
@@ -11,27 +11,33 @@
 
 
 ############################################################################################################
-njs_fs                    = require 'fs'
-njs_path                  = require 'path'
+CND                       = require 'cnd'
+CHR                       = require 'coffeenode-chr'
+rpr                       = CND.rpr.bind CND
+badge                     = 'SVGTTF/main'
+log                       = CND.get_logger 'plain',   badge
+info                      = CND.get_logger 'info',    badge
+alert                     = CND.get_logger 'alert',   badge
+debug                     = CND.get_logger 'debug',   badge
+warn                      = CND.get_logger 'warn',    badge
+urge                      = CND.get_logger 'urge',    badge
+whisper                   = CND.get_logger 'whisper', badge
+help                      = CND.get_logger 'help',    badge
+echo                      = CND.echo.bind CND
 #...........................................................................................................
+FS                        = require 'fs'
+PATH                      = require 'path'
 DOMParser                 = ( require 'xmldom-silent' ).DOMParser
 xpath                     = require 'xpath'
 #...........................................................................................................
-CHR                       = require 'coffeenode-chr'
-TRM                       = require 'coffeenode-trm'
-TEXT                      = require 'coffeenode-text'
-TYPES                     = require 'coffeenode-types'
-rpr                       = TRM.rpr.bind TRM
-badge                     = 'svg2ttf/svg-to-svg-font'
-log                       = TRM.get_logger 'plain',   badge
-info                      = TRM.get_logger 'info',    badge
-alert                     = TRM.get_logger 'alert',   badge
-debug                     = TRM.get_logger 'debug',   badge
-warn                      = TRM.get_logger 'warn',    badge
-urge                      = TRM.get_logger 'urge',    badge
-whisper                   = TRM.get_logger 'whisper', badge
-help                      = TRM.get_logger 'help',    badge
-echo                      = TRM.echo.bind TRM
+@types                    = require './types'
+{ isa
+  validate
+  declare
+  first_of
+  last_of
+  size_of
+  type_of }               = @types
 #...........................................................................................................
 SvgPath                   = require 'svgpath'
 #...........................................................................................................
@@ -94,9 +100,9 @@ options[ 'scale' ] = em_size / module
     local_min_cid     = +Infinity
     local_max_cid     = -Infinity
     local_glyph_count = 0
-    filename          = njs_path.basename route
+    filename          = PATH.basename route
     cid0              = @_cid0_from_route route
-    source            = njs_fs.readFileSync route, encoding: 'utf-8'
+    source            = FS.readFileSync route, encoding: 'utf-8'
     doc               = parser.parseFromString( source, 'application/xml' )
     paths             = select selector, doc
     path_count        = paths.length
@@ -110,8 +116,8 @@ options[ 'scale' ] = em_size / module
         [ _, x, y, ]  = match
         x             = parseFloat x, 10
         y             = parseFloat y, 10
-        unless ( TYPES.isa_number x ) and ( TYPES.isa_number y )
-          throw new Error "unable to parse transform #{rpr transform}"
+        validate.number x
+        validate.number y
         transform     = [ 'translate', x, y ]
       #.....................................................................................................
       else
@@ -191,7 +197,7 @@ options[ 'scale' ] = em_size / module
 @_write_ttf = ( svgfont, settings ) ->
   output_route  = settings[ 'output-route' ]
   ### svg2ttf has a strange API and returns a buffer that isn't a `Buffer`...  ###
-  njs_fs.writeFileSync output_route, new Buffer ( svg2ttf svgfont ).buffer
+  FS.writeFileSync output_route, new Buffer.from ( svg2ttf svgfont ).buffer
   help "output written to #{output_route}"
 
 
@@ -373,7 +379,7 @@ T.path = ( path ) ->
   @_get_output_route R
   #.........................................................................................................
   for name in ( name for name of R ).sort()
-    whisper ( TEXT.flush_left name + ':', 20 ), rpr R[ name ]
+    whisper ( ( name + ':' ).padEnd 20 ), rpr R[ name ]
   #.........................................................................................................
   return R
 
@@ -389,7 +395,7 @@ T.path = ( path ) ->
     else throw new Error "output format not supported: #{rpr output_format}"
   #.........................................................................................................
   R = settings[ 'output-route' ] = @_join_routes output, "#{font_name}.#{extension}"
-  if ( not settings[ 'overwrite' ] ) and njs_fs.existsSync R
+  if ( not settings[ 'overwrite' ] ) and FS.existsSync R
     warn "target already exists: #{R}"
     help "either"
     help "  * correct your input"
@@ -454,7 +460,7 @@ T.path = ( path ) ->
   debug @f path
 
 #-----------------------------------------------------------------------------------------------------------
-@_join_routes = ( P... ) -> njs_path.resolve process.cwd(), njs_path.join P...
+@_join_routes = ( P... ) -> PATH.resolve process.cwd(), PATH.join P...
 
 
 ############################################################################################################
