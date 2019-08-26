@@ -351,6 +351,28 @@ T.path = ( path ) ->
   return null
 
 
+#===========================================================================================================
+# HELPERS
+#-----------------------------------------------------------------------------------------------------------
+@demo = ->
+  d = "M168,525.89c38,36,48,48,46,81s5,47-46,52 s-88,35-91-27s-21-73,11-92S168,525.89,168,525.89z"
+  path = new SvgPath d
+    .scale 0.5
+    .translate 100, 200
+    .abs()
+    .round 0
+    # .rel()
+    # .round(1) # Fix js floating point error/garbage after rel()
+    # .toString()
+  debug JSON.stringify path
+  # debug path.toString()
+  help @points_from_absolute_path path
+  help @center_from_absolute_path path
+  debug @f path
+
+#-----------------------------------------------------------------------------------------------------------
+@_join_routes = ( P... ) -> PATH.resolve process.cwd(), PATH.join P...
+
 ############################################################################################################
 # HANDLE SETTINGS
 #-----------------------------------------------------------------------------------------------------------
@@ -427,75 +449,68 @@ T.path = ( path ) ->
   return R
 
 
-#===========================================================================================================
-# HELPERS
-#-----------------------------------------------------------------------------------------------------------
-@demo = ->
-  d = "M168,525.89c38,36,48,48,46,81s5,47-46,52 s-88,35-91-27s-21-73,11-92S168,525.89,168,525.89z"
-  path = new SvgPath d
-    .scale 0.5
-    .translate 100, 200
-    .abs()
-    .round 0
-    # .rel()
-    # .round(1) # Fix js floating point error/garbage after rel()
-    # .toString()
-  debug JSON.stringify path
-  # debug path.toString()
-  help @points_from_absolute_path path
-  help @center_from_absolute_path path
-  debug @f path
-
-#-----------------------------------------------------------------------------------------------------------
-@_join_routes = ( P... ) -> PATH.resolve process.cwd(), PATH.join P...
-
-
 ############################################################################################################
 if require.main is module then do =>
-  docopt    = ( require 'coffeenode-docopt' ).docopt
-  # filename  = ( require 'path' ).basename __filename
-  version   = ( require '../package.json' )[ 'version' ]
+  program = require 'commander'
   #.........................................................................................................
-  # Usage: #{filename} svg svgfont <directory> <font-name> [<output>]
-  #        #{filename} svg ttf <directory> <font-name> [<output>]
-  # Usage: svgttf [-f] <input-format> <output-format> <input-directory> <font-name> <output>
-  usage     = """
-  Usage: svgttf [-f] <input-directory> <font-name> <input-format> <output-directory> <output-format>
-
-        Currently the only allowed arguments are:
-        <input-format>:     must be `svg`
-        <output-format>:    must be `ttf`
-        <input-directory>:  route to directory with your SVG design sheets
-        <font-name>:        name of your font
-        <output-directory>: directory where output is written to
-
-        Please observe:
-
-        * The structure of your SVG design sheets must follow the guidelines as detailed in the
-          project README.md.
-
-        * Your font files must be named like `myfontname-e100.svg`, `myfontname-e200.svg`, ..., i.e.
-          each filename has the font name first and ends with an indication of the first CID (Unicode
-          codepoint, in hexadecimal) and the filename extension `.svg`.
-
-        * Use `.` (dot) to get a file named `myfontname.ttf` in the current directory.
-
-        * `svgttf` will not overwrite an existing file unless given the `--force` (or `-f`) option.
-
-  Options:
-    -h, --help
-    -v, --version
-    -f, --force
-  """
+  program
+    .version ( require '../package.json' ).version
+    .command      'generate <sourcepath> [targetpath]'
+    .description  "generate a *.ttf font from an SVG source"
+    .option       '-f, --force', "overwrite existing *.ttf file where present"
+    .action ( sourcepath, targetpath, options ) =>
+      # targetpath          ?= sourcepath
+      options.force       ?= false
+      info "^38392 generate #{sourcepath} => #{targetpath} (force: #{options.force})"
   #.........................................................................................................
-  cli_options = docopt usage, version: version, help: ( left, collected ) ->
-    # urge left
-    # help collected
-    help '\n' + usage
+  program.on 'command:*', ->
+    console.error ( CND.yellow CND.reverse '^svgttf#3342^\n' ) + CND.red CND.reverse """
+      Invalid command: #{process.argv[ 2 .. ].join ' '}
+      See --help for a list of available commands."""
+    process.exit 1
   #.........................................................................................................
-  if cli_options?
-    @main @_compile_settings cli_options
+  program.parse process.argv
+  process.exit 1
+  #.........................................................................................................
+#   usage     = """
+#   Usage: svgttf [-f] <input-directory> <font-name> <input-format> <output-directory> <output-format>
 
+#         Currently the only allowed arguments are:
+#         <input-format>:     must be `svg`
+#         <output-format>:    must be `ttf`
+#         <input-directory>:  route to directory with your SVG design sheets
+#         <font-name>:        name of your font
+#         <output-directory>: directory where output is written to
+
+#         Please observe:
+
+#         * The structure of your SVG design sheets must follow the guidelines as detailed in the
+#           project README.md.
+
+#         * Your font files must be named like `myfontname-e100.svg`, `myfontname-e200.svg`, ..., i.e.
+#           each filename has the font name first and ends with an indication of the first CID (Unicode
+#           codepoint, in hexadecimal) and the filename extension `.svg`.
+
+#         * Use `.` (dot) to get a file named `myfontname.ttf` in the current directory.
+
+#         * `svgttf` will not overwrite an existing file unless given the `--force` (or `-f`) option.
+
+#   Options:
+#     -h, --help
+#     -v, --version
+#     -f, --force
+#   """
+#   #.........................................................................................................
+#   cli_options = docopt usage, version: version, help: ( left, collected ) ->
+#     help '\n' + usage
+#     urge '^svgttf#673^', left
+#     help '^svgttf#674^', collected
+#   #.........................................................................................................
+#   if cli_options?
+#     @main @_compile_settings cli_options
+
+# # node lib/main.js --force art        svgttf-sample-font  svg /tmp      ttf
+# # node lib/main.js --force materials  someglyphs          svg materials ttf
 
 
 
