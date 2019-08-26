@@ -45,8 +45,13 @@ require                   '../exception-handler'
 #   $show  }                = SP.export()
 #...........................................................................................................
 OT                        = require 'opentype.js'
+path_precision            = 5
+SvgPath                   = require 'svgpath'
+SVGTTF                    = require '../main'
 
 
+#===========================================================================================================
+#
 #-----------------------------------------------------------------------------------------------------------
 @load_font = ( path ) -> OT.loadSync path
 
@@ -56,6 +61,31 @@ OT                        = require 'opentype.js'
   FS.writeFileSync path, buffer = Buffer.from font.toArrayBuffer()
   return buffer.length
 
+#-----------------------------------------------------------------------------------------------------------
+@list_glyphs_in_font = ( font_or_path ) ->
+  if isa.text font_or_path
+    return @list_glyphs_in_font @load_font font_or_path
+  #.........................................................................................................
+  font  = font_or_path
+  R     = new Set()
+  #.........................................................................................................
+  for idx, glyph of font.glyphs.glyphs
+    if glyph.name in [ '.notdef', ] or ( not glyph.unicode? ) or ( glyph.unicode < 0x20 )
+      warn "skipping glyph #{rpr glyph.name}"
+      continue
+    unicodes  = glyph.unicodes
+    unicodes  = [ glyph.unicode, ] if ( not unicodes? ) or ( unicodes.length is 0 )
+    # debug rpr glyph
+    # debug rpr unicodes
+    for cid in unicodes
+      # debug rpr cid
+      R.add String.fromCodePoint cid
+  #.........................................................................................................
+  return [ R... ].sort()
+
+
+#===========================================================================================================
+#
 #-----------------------------------------------------------------------------------------------------------
 @demo = ->
   debug '^ot#332', ( k for k of OT )
@@ -89,51 +119,78 @@ OT                        = require 'opentype.js'
       warn "^xxx#3773^ no such glyph: 0x#{idx.toString 16}"
       continue
     debug "#{glyph.index} #{glyph.name ? './.'} 0x#{(glyph.unicode ? 0).toString 16} #{glyph.unicodes}"
-  help ( @list_glyphs_in_font font ).join ''
-
-#-----------------------------------------------------------------------------------------------------------
-@list_glyphs_in_font = ( font_or_path ) ->
-  if isa.text font_or_path
-    return @list_glyphs_in_font @load_font font_or_path
-  #.........................................................................................................
-  font  = font_or_path
-  R     = new Set()
-  #.........................................................................................................
-  for idx, glyph of font.glyphs.glyphs
-    if glyph.name in [ '.notdef', ] or ( not glyph.unicode? ) or ( glyph.unicode < 0x20 )
-      warn "skipping glyph #{rpr glyph.name}"
-      continue
-    unicodes  = glyph.unicodes
-    unicodes  = [ glyph.unicode, ] if ( not unicodes? ) or ( unicodes.length is 0 )
-    # debug rpr glyph
-    # debug rpr unicodes
-    for cid in unicodes
-      # debug rpr cid
-      R.add String.fromCodePoint cid
-  #.........................................................................................................
-  return [ R... ].sort()
+  # help ( @list_glyphs_in_font font ).join ''
+  info ( @list_glyphs_in_font PATH.resolve PATH.join fonts_home, 'FandolSong-Regular.subset.otf' ).join ''
 
 #-----------------------------------------------------------------------------------------------------------
 @demo_glyph_copying = ->
   fonts_home  = project_abspath '.', 'materials'
-  filepath    = PATH.resolve PATH.join fonts_home, 'Sun-ExtA-excerpts.ttf'
-  font        = @load_font filepath
-  echo """<?xml version="1.0" encoding="utf-8"?><svg>"""
-  for cid in [ 0x5e00 .. 0x5e01 ]
-    chr   = String.fromCodePoint cid
-    glyph = font.charToGlyph chr
-    # debug ( k for k of glyph )
-    # info glyph.getContours()
-    path = glyph.getPath()
-    # info path.toPathData 3 # precision
-    echo '<!-- ^xxx#3422', "0x#{cid.toString 16} #{chr} -->"
-    echo "<g>#{path.toSVG 3}</g>"
-  echo """</svg>"""
+  entries     = [
+    { filename: 'Sun-ExtA-excerpts.ttf',          glyphs: '冰串丳', }
+    { filename: 'FandolSong-Regular.subset.otf',  glyphs: '与丐', }
+    ]
+  #.........................................................................................................
+  output_filepath = project_abspath 'materials', 'someglyphs.svg'
+  FS.writeFileSync output_filepath, ''
+  write           = ( text ) -> FS.appendFileSync output_filepath, text + '\n'
+  #.........................................................................................................
+  write """<?xml version="1.0" encoding="utf-8"?>"""
+  write """<svg width="576" height="576">"""
+  write """  <sodipodi:namedview
+      pagecolor="#ffffff"
+      bordercolor="#666666"
+      borderopacity="1"
+      objecttolerance="10"
+      gridtolerance="10"
+      guidetolerance="10"
+      inkscape:pageopacity="0"
+      inkscape:pageshadow="2"
+      inkscape:window-width="1366"
+      inkscape:window-height="713"
+      id="namedview532"
+      showgrid="true"
+      inkscape:zoom="3.2332991"
+      inkscape:cx="134.11925"
+      inkscape:cy="119.87498"
+      inkscape:window-x="0"
+      inkscape:window-y="0"
+      inkscape:window-maximized="1"
+      inkscape:current-layer="layer:glyphs"
+      inkscape:snap-global="false">
+    <inkscape:grid type='xygrid' id='grid490' units='px' spacingx='36' spacingy='36'/>
+  </sodipodi:namedview>
+  """
+  write """<g id='layer:glyphs' inkscape:groupmode='layer' inkscape:label='layer:glyphs'>"""
+  #.........................................................................................................
+  nr = 0
+  for { filename, glyphs, } in entries
+    filepath    = PATH.resolve PATH.join fonts_home, filename
+    font        = @load_font filepath
+    for glyph in Array.from glyphs
+      nr++
+      cid         = glyph.codePointAt 0
+      cid_hex     = "0x#{cid.toString 16}"
+      fglyph      = font.charToGlyph glyph
+      path_obj    = fglyph.getPath()
+      path_data   = path_obj.toPathData path_precision
+      svg_path    = ( new SvgPath path_data ).abs()
+      svg_path    = svg_path.abs()
+      svg_path    = svg_path.scale 0.5, 0.5
+      svg_path    = svg_path.translate 0 + ( nr - 1 ) * 36, 0
+      svg_path    = svg_path.round path_precision
+      # debug ( k for k of svg_path )
+      path_data   = svg_path.toString()
+      # debug path_data
+      # path_data   = SVGTTF._path_data_from_svg_path svg_path
+      write "<g><!-- ^xxx#3422' #{cid_hex} #{glyph} --><path d='#{path_data}'/></g>"
+  #.........................................................................................................
+  write """</g>"""
+  write """</svg>"""
   # debug font.toTables()
-  path = '/tmp/myfont.ttf'
-  whisper "^xxx#4763^ saving font to #{path}"
+  # path = '/tmp/myfont.ttf'
+  # whisper "^xxx#4763^ saving font to #{path}"
   # @save_font path, font
-  help "^xxx#4763^ ok"
+  help "^xxx#4763^ output written to #{cwd_relpath output_filepath}"
 
 #-----------------------------------------------------------------------------------------------------------
 @demo2 = ->
@@ -168,8 +225,7 @@ OT                        = require 'opentype.js'
   font.download()
 
 ############################################################################################################
-unless module.parent?
-  do =>
-    await @demo()
-    # await @demo_glyph_copying()
+if require.main is module then do =>
+  # await @demo()
+  await @demo_glyph_copying()
 
