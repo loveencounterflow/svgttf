@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+set -euo pipefail
+home="$(realpath "$(realpath "${BASH_SOURCE[0]}" | xargs dirname)"/.)"
+cd "$home"
+
+cat .gitignore > .npmignore
+echo '' >> .npmignore
+echo '#####################################' >> .npmignore
+echo '# copied from npmignore-additions:  #' >> .npmignore
+echo '#####################################' >> .npmignore
+echo '' >> .npmignore
+cat npmignore-additions >> .npmignore
+
