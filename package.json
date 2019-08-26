@@ -30,6 +30,7 @@
     "glob": "^7.1.4",
     "intertype": "^2.5.0",
     "lodash": "^4.17.15",
+    "opentype.js": "^1.1.0",
     "svg2ttf": "^4.3.0",
     "svgpath": "^2.2.2",
     "xmldom-silent": "^0.1.19",
