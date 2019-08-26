@@ -59,11 +59,8 @@ OT                        = require 'opentype.js'
 #-----------------------------------------------------------------------------------------------------------
 @demo = ->
   debug '^ot#332', ( k for k of OT )
-  fonts_home  = project_abspath '.', 'font-sources'
-  # debug filepath  = PATH.resolve PATH.join fonts_home, '010-jizura-fonts/simfang.ttf'
-  # debug filepath  = PATH.resolve PATH.join fonts_home, '010-jizura-fonts/BabelStoneHan.ttf'
-  # debug filepath  = PATH.resolve PATH.join fonts_home, '010-jizura-fonts/HanaMinB.ttf'
-  debug filepath  = PATH.resolve PATH.join fonts_home, '010-jizura-fonts/sun-exta.ttf'
+  fonts_home  = project_abspath '.', 'materials'
+  filepath    = PATH.resolve PATH.join fonts_home, 'Sun-ExtA-excerpts.ttf'
   # debug filepath  = PATH.resolve PATH.join fonts_home, '010-jizura-fonts/EBGaramond-InitialsF2.otf'
   font = @load_font filepath
   urge ( k for k of font )
@@ -92,11 +89,34 @@ OT                        = require 'opentype.js'
       warn "^xxx#3773^ no such glyph: 0x#{idx.toString 16}"
       continue
     debug "#{glyph.index} #{glyph.name ? './.'} 0x#{(glyph.unicode ? 0).toString 16} #{glyph.unicodes}"
+  help ( @list_glyphs_in_font font ).join ''
+
+#-----------------------------------------------------------------------------------------------------------
+@list_glyphs_in_font = ( font_or_path ) ->
+  if isa.text font_or_path
+    return @list_glyphs_in_font @load_font font_or_path
+  #.........................................................................................................
+  font  = font_or_path
+  R     = new Set()
+  #.........................................................................................................
+  for idx, glyph of font.glyphs.glyphs
+    if glyph.name in [ '.notdef', ] or ( not glyph.unicode? ) or ( glyph.unicode < 0x20 )
+      warn "skipping glyph #{rpr glyph.name}"
+      continue
+    unicodes  = glyph.unicodes
+    unicodes  = [ glyph.unicode, ] if ( not unicodes? ) or ( unicodes.length is 0 )
+    # debug rpr glyph
+    # debug rpr unicodes
+    for cid in unicodes
+      # debug rpr cid
+      R.add String.fromCodePoint cid
+  #.........................................................................................................
+  return [ R... ].sort()
 
 #-----------------------------------------------------------------------------------------------------------
 @demo_glyph_copying = ->
-  fonts_home  = project_abspath '.', 'font-sources'
-  filepath    = PATH.resolve PATH.join fonts_home, '010-jizura-fonts/sun-exta.ttf'
+  fonts_home  = project_abspath '.', 'materials'
+  filepath    = PATH.resolve PATH.join fonts_home, 'Sun-ExtA-excerpts.ttf'
   font        = @load_font filepath
   echo """<?xml version="1.0" encoding="utf-8"?><svg>"""
   for cid in [ 0x5e00 .. 0x5e01 ]
@@ -150,5 +170,6 @@ OT                        = require 'opentype.js'
 ############################################################################################################
 unless module.parent?
   do =>
-    await @demo_glyph_copying()
+    await @demo()
+    # await @demo_glyph_copying()
 
