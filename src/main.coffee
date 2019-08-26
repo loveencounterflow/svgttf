@@ -37,32 +37,10 @@ SvgPath                   = require 'svgpath'
 ### https://github.com/fontello/svg2ttf ###
 svg2ttf                   = require 'svg2ttf'
 SVGTTF                    = @
+options                   = require './options'
 
 
-#===========================================================================================================
-# OPTIONS
-#-----------------------------------------------------------------------------------------------------------
-_module   = 36
-_em_size  = 4096
-options =
-  ### Coordinates of first glyph outline: ###
-  'offset':           [ _module * 4, _module * 4, ]
-  ### Ad hoc correction: ###
-  'correction':       [ 0, _module * 0.075, ]
-  ### Size of grid and font design size: ###
-  'module':           _module
-  # 'scale':            256 / _module
-  # 'scale':            1024 / _module
-  ### Number of glyph rows between two rulers plus one: ###
-  'block-height':     9
-  ### CID of first glyph outline: ###
-  'row-length':       16
-  'em-size':          _em_size
-  'ascent':           +0.8 * _em_size
-  'descent':          -0.2 * _em_size
 
-#...........................................................................................................
-options[ 'scale' ] = _em_size / _module
 
 #===========================================================================================================
 #
@@ -81,7 +59,7 @@ options[ 'scale' ] = _em_size / _module
   min_cid         = +Infinity
   max_cid         = -Infinity
   font_name       = settings[ 'font-name' ]
-  correction      = options[ 'correction' ]
+  correction      = options.correction
   info "reading files for font #{rpr font_name}"
   #.........................................................................................................
   for route in input_routes
@@ -116,21 +94,21 @@ options[ 'scale' ] = _em_size / _module
       path          = path.translate correction[ 0 ], correction[ 1 ] if correction?
       center        = @center_from_absolute_path path
       [ x, y, ]     = center
-      x            -= options[ 'offset' ][ 0 ]
-      y            -= options[ 'offset' ][ 1 ]
-      col           = Math.floor x / options[ 'module' ]
-      row           = Math.floor y / options[ 'module' ]
-      block_count   = row // options[ 'block-height' ]
+      x            -= options.offset[ 0 ]
+      y            -= options.offset[ 1 ]
+      col           = Math.floor x / options.module
+      row           = Math.floor y / options.module
+      block_count   = row // options.block_height
       actual_row    = row - block_count
-      cid           = cid0 + actual_row * options[ 'row-length' ] + col
-      dx            = - ( col * options[ 'module' ] ) - options[ 'offset' ][ 0 ]
-      dy            = - ( row * options[ 'module' ] ) - options[ 'offset' ][ 1 ]
+      cid           = cid0 + actual_row * options.row_length + col
+      dx            = - ( col * options.module ) - options.offset[ 0 ]
+      dy            = - ( row * options.module ) - options.offset[ 1 ]
       #.....................................................................................................
       path          = path
         .translate  dx, dy
         .scale      1, -1
-        .translate  0, options[ 'module' ]
-        .scale      options[ 'scale' ]
+        .translate  0, options.module
+        .scale      options.scale
         .round      0
       #.....................................................................................................
       if cid < cid0
@@ -285,7 +263,7 @@ T.DEFS = ( P... ) ->
 T.FONT = ( font_name, P... ) ->
   Q =
     'id':             font_name
-    'horiz-adv-x':    options[ 'module' ] * options[ 'scale' ]
+    'horiz-adv-x':    options.module * options.scale
     # 'horiz-origin-x':   0
     # 'horiz-origin-y':   0
     # 'vert-origin-x':    0
@@ -297,10 +275,10 @@ T.FONT = ( font_name, P... ) ->
 T.FONT_FACE = ( font_family ) ->
   Q =
     'font-family':    font_family
-    'units-per-em':   options[ 'module' ] * options[ 'scale' ]
+    'units-per-em':   options.module * options.scale
     ### TAINT probably wrong values ###
-    'ascent':         options[ 'ascent' ]
-    'descent':        options[ 'descent' ]
+    'ascent':         options.ascent
+    'descent':        options.descent
   ### TAINT kludge ###
   # return T.selfClosingTag 'font-face', Q
   return T.RAW ( T.render => T.TAG 'font-face', Q ).replace /><\/font-face>$/, ' />'
@@ -447,76 +425,6 @@ T.path = ( path ) ->
   unless 0x0000 <= R <= 0x10ffff
     throw new Error "illegal CID in route #{rpr route}"
   return R
-
-
-############################################################################################################
-if require.main is module then do =>
-  program = require 'commander'
-  #.........................................................................................................
-  program
-    .version ( require '../package.json' ).version
-    .command      'generate <sourcepath> [targetpath]'
-    .description  "generate a *.ttf font from an SVG source"
-    .option       '-f, --force', "overwrite existing *.ttf file where present"
-    .action ( sourcepath, targetpath, options ) =>
-      # targetpath          ?= sourcepath
-      options.force       ?= false
-      info "^38392 generate #{sourcepath} => #{targetpath} (force: #{options.force})"
-  #.........................................................................................................
-  program.on 'command:*', ->
-    console.error ( CND.yellow CND.reverse '^svgttf#3342^\n' ) + CND.red CND.reverse """
-      Invalid command: #{process.argv[ 2 .. ].join ' '}
-      See --help for a list of available commands."""
-    process.exit 1
-  #.........................................................................................................
-  program.parse process.argv
-  process.exit 1
-  #.........................................................................................................
-#   usage     = """
-#   Usage: svgttf [-f] <input-directory> <font-name> <input-format> <output-directory> <output-format>
-
-#         Currently the only allowed arguments are:
-#         <input-format>:     must be `svg`
-#         <output-format>:    must be `ttf`
-#         <input-directory>:  route to directory with your SVG design sheets
-#         <font-name>:        name of your font
-#         <output-directory>: directory where output is written to
-
-#         Please observe:
-
-#         * The structure of your SVG design sheets must follow the guidelines as detailed in the
-#           project README.md.
-
-#         * Your font files must be named like `myfontname-e100.svg`, `myfontname-e200.svg`, ..., i.e.
-#           each filename has the font name first and ends with an indication of the first CID (Unicode
-#           codepoint, in hexadecimal) and the filename extension `.svg`.
-
-#         * Use `.` (dot) to get a file named `myfontname.ttf` in the current directory.
-
-#         * `svgttf` will not overwrite an existing file unless given the `--force` (or `-f`) option.
-
-#   Options:
-#     -h, --help
-#     -v, --version
-#     -f, --force
-#   """
-#   #.........................................................................................................
-#   cli_options = docopt usage, version: version, help: ( left, collected ) ->
-#     help '\n' + usage
-#     urge '^svgttf#673^', left
-#     help '^svgttf#674^', collected
-#   #.........................................................................................................
-#   if cli_options?
-#     @main @_compile_settings cli_options
-
-# # node lib/main.js --force art        svgttf-sample-font  svg /tmp      ttf
-# # node lib/main.js --force materials  someglyphs          svg materials ttf
-
-
-
-
-
-
 
 
 
