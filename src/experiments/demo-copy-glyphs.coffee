@@ -119,15 +119,27 @@ SVGTTF                    = require '../main'
       warn "^xxx#3773^ no such glyph: 0x#{idx.toString 16}"
       continue
     debug "#{glyph.index} #{glyph.name ? './.'} 0x#{(glyph.unicode ? 0).toString 16} #{glyph.unicodes}"
-  # help ( @list_glyphs_in_font font ).join ''
+  help ( @list_glyphs_in_font font ).join ''
   info ( @list_glyphs_in_font PATH.resolve PATH.join fonts_home, 'FandolSong-Regular.subset.otf' ).join ''
 
 #-----------------------------------------------------------------------------------------------------------
 @demo_glyph_copying = ->
   fonts_home  = project_abspath '.', 'materials'
   entries     = [
-    { filename: 'Sun-ExtA-excerpts.ttf',          glyphs: '冰串丳', }
     { filename: 'FandolSong-Regular.subset.otf',  glyphs: '与丐', }
+    { filename: 'Sun-ExtA-excerpts.ttf',          glyphs: ( """
+      冰串丳匚匛匜匝匞匟匠匡匢匣匤匥匦匧匨匩匪匫匬匭匮匯匰匱匲匳匴匵匶匷匸匹
+      叠叡叢口古句另叧叨叩只叫召叭叮可台叱史右叴叵叶号司叹叺叻叼叽叾叿吀吁吂
+      吃各吅吆吇合吉吊吋同名后吏吐向吒吓吔吕吖吗吘吙吚君吜吝吞吟吠吡吢吣吤吥
+      否吧吨吩吪含听吭吮启吰吱吲吳吴吵吶吷吸吹吺吻吼吽吾吿呀呁呂呃呄呅呆呇呈
+      呉告呋呌呍呎呏呐呑呒呓呔呕呖呗员呙呚呛呜呝呞呟呠呡呢呣呤呥呦呧周呩呪呫
+      呬呭呮呯呰呱呲味呴呵呶呷呸呹呺呻呼命呾呿咀咁咂咃咄咅咆咇咈咉咊咋和咍咎
+      咏咐咑咒咓咔咕咖咗咘咙咚咛咜咝咞咟咠咡咢咣咤咥咦咧咨咩咪咫咬咭咮咯咰咱
+      咲咳咴咵咶咷咸咹咺咻咼咽咾咿哀品哂哃哄哅哆哇哈哉哊哋哌响哎哏哐哑哒哓哔
+      哕哖哗哘哙哚哛哜哝哞哟哠員哢哣哤哥哦哧哨哩哪哫哬哭哮哯哰哱哲哳哴哵哶哷
+      哸哹哺哻哼哽哾哿唀唁唂唃唄唅唆唇唈唉唊唋唌唍唎唏唐唑唒唓唔唕唖唗唘唙唚
+      唛唜唝唞唟唠唡唢唣唤唥唦唧唨唩唪唫唬唭售
+      """.replace /\s/g, '' ), }
     ]
   #.........................................................................................................
   output_filepath = project_abspath 'materials', 'someglyphs.svg'
@@ -135,7 +147,8 @@ SVGTTF                    = require '../main'
   write           = ( text ) -> FS.appendFileSync output_filepath, text + '\n'
   #.........................................................................................................
   write """<?xml version="1.0" encoding="utf-8"?>"""
-  write """<svg width="576" height="576">"""
+  write """<svg width="1152" height="36">"""
+  # write """<svg width="576" height="576">"""
   write """  <sodipodi:namedview
       pagecolor="#ffffff"
       bordercolor="#666666"
@@ -157,26 +170,30 @@ SVGTTF                    = require '../main'
       inkscape:window-maximized="1"
       inkscape:current-layer="layer:glyphs"
       inkscape:snap-global="false">
-    <inkscape:grid type='xygrid' id='grid490' units='px' spacingx='36' spacingy='36'/>
+    <inkscape:grid type='xygrid' id='grid490' units='px' spacingx='36' spacingy='36' empspacing='8'/>
   </sodipodi:namedview>
   """
   write """<g id='layer:glyphs' inkscape:groupmode='layer' inkscape:label='layer:glyphs'>"""
   #.........................................................................................................
-  nr = 0
+  glyph_idx = -1
   for { filename, glyphs, } in entries
     filepath    = PATH.resolve PATH.join fonts_home, filename
     font        = @load_font filepath
     for glyph in Array.from glyphs
-      nr++
+      glyph_idx++
+      col_idx     = glyph_idx %% 16
+      row_idx     = glyph_idx // 16
       cid         = glyph.codePointAt 0
       cid_hex     = "0x#{cid.toString 16}"
       fglyph      = font.charToGlyph glyph
-      path_obj    = fglyph.getPath()
+      path_obj    = fglyph.getPath 0, 0, 36
       path_data   = path_obj.toPathData path_precision
-      svg_path    = ( new SvgPath path_data ).abs()
-      svg_path    = svg_path.abs()
-      svg_path    = svg_path.scale 0.5, 0.5
-      svg_path    = svg_path.translate 0 + ( nr - 1 ) * 36, 0
+      svg_path    = new SvgPath path_data
+      svg_path    = svg_path.rel()
+      # svg_path    = svg_path.scale 0.5, 0.5
+      δx          = col_idx * 36
+      δy          = ( row_idx + 1 ) * 36 - 5 ### magic number 5: ascent of outline ###
+      svg_path    = svg_path.translate δx, δy
       svg_path    = svg_path.round path_precision
       # debug ( k for k of svg_path )
       path_data   = svg_path.toString()
@@ -190,7 +207,8 @@ SVGTTF                    = require '../main'
   # path = '/tmp/myfont.ttf'
   # whisper "^xxx#4763^ saving font to #{path}"
   # @save_font path, font
-  help "^xxx#4763^ output written to #{cwd_relpath output_filepath}"
+  glyph_count = glyph_idx + 1
+  help "^xxx#4763^ SVG with #{glyph_count} glyphs to #{cwd_relpath output_filepath}"
 
 #-----------------------------------------------------------------------------------------------------------
 @demo2 = ->
