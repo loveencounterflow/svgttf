@@ -18,8 +18,6 @@ echo                      = CND.echo.bind CND
 #...........................................................................................................
 FS                        = require 'fs'
 PATH                      = require 'path'
-DOMParser                 = ( require 'xmldom-silent' ).DOMParser
-xpath                     = require 'xpath'
 #...........................................................................................................
 @types                    = require './types'
 { isa
@@ -30,42 +28,41 @@ xpath                     = require 'xpath'
   size_of
   type_of }               = @types
 #...........................................................................................................
-SvgPath                   = require 'svgpath'
-#...........................................................................................................
 ### https://github.com/loveencounterflow/coffeenode-teacup ###
 T                         = require 'coffeenode-teacup'
-#...........................................................................................................
-### https://github.com/isaacs/node-glob ###
 glob                      = require 'glob'
-#...........................................................................................................
+DOMParser                 = ( require 'xmldom-silent' ).DOMParser
+xpath                     = require 'xpath'
+SvgPath                   = require 'svgpath'
 ### https://github.com/fontello/svg2ttf ###
 svg2ttf                   = require 'svg2ttf'
+SVGTTF                    = @
 
 
 #===========================================================================================================
 # OPTIONS
 #-----------------------------------------------------------------------------------------------------------
-module    = 36
-em_size   = 4096
+_module   = 36
+_em_size  = 4096
 options =
   ### Coordinates of first glyph outline: ###
-  'offset':           [ module * 4, module * 4, ]
+  'offset':           [ _module * 4, _module * 4, ]
   ### Ad hoc correction: ###
-  'correction':       [ 0, module * 0.075, ]
+  'correction':       [ 0, _module * 0.075, ]
   ### Size of grid and font design size: ###
-  'module':           module
-  # 'scale':            256 / module
-  # 'scale':            1024 / module
+  'module':           _module
+  # 'scale':            256 / _module
+  # 'scale':            1024 / _module
   ### Number of glyph rows between two rulers plus one: ###
   'block-height':     9
   ### CID of first glyph outline: ###
   'row-length':       16
-  'em-size':          em_size
-  'ascent':           +0.8 * em_size
-  'descent':          -0.2 * em_size
+  'em-size':          _em_size
+  'ascent':           +0.8 * _em_size
+  'descent':          -0.2 * _em_size
 
 #...........................................................................................................
-options[ 'scale' ] = em_size / module
+options[ 'scale' ] = _em_size / _module
 
 #===========================================================================================================
 #
@@ -313,7 +310,7 @@ T.GLYPH = ( cid, path ) ->
   Q           =
     # unicode:  T.TEXT CHR.as_ncr cid
     unicode:  CHR.as_chr cid
-    d:        T._rpr_path path
+    d:        SVGTTF._path_data_from_svg_path path
   return T.TAG 'glyph', Q
 
 #-----------------------------------------------------------------------------------------------------------
@@ -321,12 +318,11 @@ T.MARKER = ( xy, r = 10 ) ->
   return T.TAG 'circle', cx: xy[ 0 ], cy: xy[ 1 ], r: r, fill: '#f00'
 
 #-----------------------------------------------------------------------------------------------------------
-T._rpr_path = ( path ) ->
-  return ( s[ 0 ] + s[ 1 .. ].join ',' for s in path[ 'segments' ] ).join ' '
+@_path_data_from_svg_path = ( me ) -> ( s[ 0 ] + s[ 1 .. ].join ',' for s in me.segments ).join ' '
 
 #-----------------------------------------------------------------------------------------------------------
 T.path = ( path ) ->
-  path_txt = T._rpr_path path
+  path_txt = SVGTTF._path_data_from_svg_path path
   return T.TAG 'path', d: path_txt, fill: '#000'
 
 #-----------------------------------------------------------------------------------------------------------
@@ -455,7 +451,7 @@ T.path = ( path ) ->
 
 
 ############################################################################################################
-unless module.parent? then do =>
+if require.main is module then do =>
   docopt    = ( require 'coffeenode-docopt' ).docopt
   # filename  = ( require 'path' ).basename __filename
   version   = ( require '../package.json' )[ 'version' ]
@@ -499,7 +495,6 @@ unless module.parent? then do =>
   #.........................................................................................................
   if cli_options?
     @main @_compile_settings cli_options
-
 
 
 
