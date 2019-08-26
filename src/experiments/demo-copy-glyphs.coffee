@@ -142,7 +142,7 @@ SVGTTF                    = require '../main'
       """.replace /\s/g, '' ), }
     ]
   #.........................................................................................................
-  output_filepath = project_abspath 'materials', 'someglyphs.svg'
+  output_filepath = project_abspath 'materials', 'someglyphs-4e00.svg'
   FS.writeFileSync output_filepath, ''
   write           = ( text ) -> FS.appendFileSync output_filepath, text + '\n'
   #.........................................................................................................
