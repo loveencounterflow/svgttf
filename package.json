@@ -25,8 +25,8 @@
   "dependencies": {
     "cnd": "^4.6.0",
     "coffeenode-chr": "^1.1.0",
-    "coffeenode-docopt": "^0.2.0",
     "coffeenode-teacup": "^0.2.0",
+    "commander": "^3.0.0",
     "glob": "^7.1.4",
     "intertype": "^2.5.0",
     "lodash": "^4.17.15",
