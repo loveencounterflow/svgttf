@@ -5,7 +5,7 @@
 CND                       = require 'cnd'
 CHR                       = require 'coffeenode-chr'
 rpr                       = CND.rpr.bind CND
-badge                     = 'SVGTTF/main'
+badge                     = 'SVGTTF/MAIN'
 log                       = CND.get_logger 'plain',   badge
 info                      = CND.get_logger 'info',    badge
 alert                     = CND.get_logger 'alert',   badge
@@ -45,7 +45,7 @@ options                   = require './options'
 #===========================================================================================================
 #
 #-----------------------------------------------------------------------------------------------------------
-@main = ( settings ) ->
+@generate = ( settings ) ->
   input_routes    = settings[ 'input-routes' ]
   # debug settings
   glyphs          = {}
@@ -58,7 +58,7 @@ options                   = require './options'
   fallback_source = null
   min_cid         = +Infinity
   max_cid         = -Infinity
-  font_name       = settings[ 'font-name' ]
+  font_name       = settings.fontname
   correction      = options.correction
   info "reading files for font #{rpr font_name}"
   #.........................................................................................................
@@ -350,81 +350,5 @@ T.path = ( path ) ->
 
 #-----------------------------------------------------------------------------------------------------------
 @_join_routes = ( P... ) -> PATH.resolve process.cwd(), PATH.join P...
-
-############################################################################################################
-# HANDLE SETTINGS
-#-----------------------------------------------------------------------------------------------------------
-@_compile_settings = ( cli_options ) ->
-  R =
-    'overwrite':          cli_options[ '--force'            ]
-    'input-format':       cli_options[ '<input-format>'     ]
-    'output-format':      cli_options[ '<output-format>'    ]
-    'input-directory':    cli_options[ '<input-directory>'  ]
-    'font-name':          cli_options[ '<font-name>'        ]
-    'output-directory':   cli_options[ '<output-directory>' ]
-  @_get_input_routes R
-  @_get_output_route R
-  #.........................................................................................................
-  for name in ( name for name of R ).sort()
-    whisper ( ( name + ':' ).padEnd 20 ), rpr R[ name ]
-  #.........................................................................................................
-  return R
-
-#-----------------------------------------------------------------------------------------------------------
-@_get_output_route = ( settings ) ->
-  output_format     = settings[ 'output-format'     ]
-  output            = settings[ 'output-directory'  ]
-  font_name         = settings[ 'font-name'         ]
-  #.........................................................................................................
-  switch output_format
-    when 'ttf'
-      extension = settings[ 'output-extension' ] = 'ttf'
-    else throw new Error "output format not supported: #{rpr output_format}"
-  #.........................................................................................................
-  R = settings[ 'output-route' ] = @_join_routes output, "#{font_name}.#{extension}"
-  if ( not settings[ 'overwrite' ] ) and FS.existsSync R
-    warn "target already exists: #{R}"
-    help "either"
-    help "  * correct your input"
-    help "  * or remove target first"
-    help "  * or use the `-f` option"
-    throw new Error "target exists"
-
-#-----------------------------------------------------------------------------------------------------------
-@_get_input_routes = ( settings ) ->
-  input_format      = settings[ 'input-format'    ]
-  input_directory   = settings[ 'input-directory' ]
-  font_name         = settings[ 'font-name'       ]
-  #.........................................................................................................
-  switch input_format
-    when 'svg', 'svgfont'
-      extension = settings[ 'input-extension' ] = 'svg'
-    else throw new Error "input format not supported: #{rpr input_format}"
-  #.........................................................................................................
-  name_glob   = "#{font_name}-+([0-9a-f]).#{extension}"
-  route_glob  = settings[ 'input-glob'    ] = @_join_routes input_directory, name_glob
-  R           = settings[ 'input-routes'  ] = glob.sync route_glob
-  return R
-
-#-----------------------------------------------------------------------------------------------------------
-@_font_name_from_route = ( route ) ->
-  match = route.match /([^\/]+)-[0-9a-f]+?\.svg$/
-  unless match?
-    throw new Error "unable to parse route #{rpr route}"
-  R = match[ 1 ]
-  unless R.length > 0
-    throw new Error "illegal font name in route #{rpr route}"
-  return R
-
-#-----------------------------------------------------------------------------------------------------------
-@_cid0_from_route = ( route ) ->
-  match = route.match /-([0-9a-f]+)\.svg$/
-  unless match?
-    throw new Error "unable to parse route #{rpr route}"
-  R = parseInt match[ 1 ], 16
-  unless 0x0000 <= R <= 0x10ffff
-    throw new Error "illegal CID in route #{rpr route}"
-  return R
-
 
 
