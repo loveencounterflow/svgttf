@@ -44,8 +44,6 @@ module.exports = options =
   correction:       [ 0, _module * 0.075, ]
   ### Size of grid and font design size: ###
   module:           _module
-  # scale:            256 / _module
-  # scale:            1024 / _module
   ### Number of glyph rows between two rulers plus one: ###
   block_height:     9
   ### CID of first glyph outline: ###
