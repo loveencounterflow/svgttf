@@ -31,61 +31,61 @@ CHR                       = require 'coffeenode-chr'
 ### https://github.com/loveencounterflow/coffeenode-teacup ###
 # T                         = require 'coffeenode-teacup'
 glob                      = require 'glob'
-
-
+SVGTTF                    = require '..'
+{ cwd_abspath }           = require './helpers'
 
 #-----------------------------------------------------------------------------------------------------------
-@_compile_settings = ( cli_options ) ->
-  R =
-    'overwrite':          cli_options[ '--force'            ]
-    'input-format':       cli_options[ '<input-format>'     ]
-    'output-format':      cli_options[ '<output-format>'    ]
-    'input-directory':    cli_options[ '<input-directory>'  ]
-    'font-name':          cli_options[ '<font-name>'        ]
-    'output-directory':   cli_options[ '<output-directory>' ]
-  @_get_input_routes R
-  @_get_output_route R
-  #.........................................................................................................
-  for name in ( name for name of R ).sort()
-    whisper ( ( name + ':' ).padEnd 20 ), rpr R[ name ]
-  #.........................................................................................................
+@_compile_settings = ( settings ) ->
+  R                   = settings
+  R.sourcepath = cwd_abspath            R.sourcepath
+  R.fontname   = @_font_name_from_route R.sourcepath
+  R.cid0       = @_cid0_from_route      R.sourcepath
+  R.targetpath = cwd_abspath            ( PATH.dirname R.sourcepath ), R.fontname + '.ttf'
   return R
 
-#-----------------------------------------------------------------------------------------------------------
-@_get_output_route = ( settings ) ->
-  output_format     = settings[ 'output-format'     ]
-  output            = settings[ 'output-directory'  ]
-  font_name         = settings[ 'font-name'         ]
-  #.........................................................................................................
-  switch output_format
-    when 'ttf'
-      extension = settings[ 'output-extension' ] = 'ttf'
-    else throw new Error "output format not supported: #{rpr output_format}"
-  #.........................................................................................................
-  R = settings[ 'output-route' ] = @_join_routes output, "#{font_name}.#{extension}"
-  if ( not settings[ 'overwrite' ] ) and FS.existsSync R
-    warn "target already exists: #{R}"
-    help "either"
-    help "  * correct your input"
-    help "  * or remove target first"
-    help "  * or use the `-f` option"
-    throw new Error "target exists"
+  # @_get_input_routes R
+  # @_get_output_route R
+  # #.........................................................................................................
+  # for name in ( name for name of R ).sort()
+  #   whisper ( ( name + ':' ).padEnd 20 ), rpr R[ name ]
+  # #.........................................................................................................
+  # debug '^5542^', R
 
-#-----------------------------------------------------------------------------------------------------------
-@_get_input_routes = ( settings ) ->
-  input_format      = settings[ 'input-format'    ]
-  input_directory   = settings[ 'input-directory' ]
-  font_name         = settings[ 'font-name'       ]
-  #.........................................................................................................
-  switch input_format
-    when 'svg', 'svgfont'
-      extension = settings[ 'input-extension' ] = 'svg'
-    else throw new Error "input format not supported: #{rpr input_format}"
-  #.........................................................................................................
-  name_glob   = "#{font_name}-+([0-9a-f]).#{extension}"
-  route_glob  = settings[ 'input-glob'    ] = @_join_routes input_directory, name_glob
-  R           = settings[ 'input-routes'  ] = glob.sync route_glob
-  return R
+# #-----------------------------------------------------------------------------------------------------------
+# @_get_output_route = ( settings ) ->
+#   output_format     = settings[ 'output-format'     ]
+#   output            = settings[ 'output_directory'  ]
+#   font_name         = settings[ 'fontname'         ]
+#   #.........................................................................................................
+#   switch output_format
+#     when 'ttf'
+#       extension = settings[ 'output-extension' ] = 'ttf'
+#     else throw new Error "output format not supported: #{rpr output_format}"
+#   #.........................................................................................................
+#   R = settings[ 'output-route' ] = @_join_routes output, "#{font_name}.#{extension}"
+#   if ( not settings[ 'overwrite' ] ) and FS.existsSync R
+#     warn "target already exists: #{R}"
+#     help "either"
+#     help "  * correct your input"
+#     help "  * or remove target first"
+#     help "  * or use the `-f` option"
+#     throw new Error "target exists"
+
+# #-----------------------------------------------------------------------------------------------------------
+# @_get_input_routes = ( settings ) ->
+#   input_format      = settings[ 'input-format'    ]
+#   input_directory   = settings[ 'input_directory' ]
+#   font_name         = settings[ 'fontname'       ]
+#   #.........................................................................................................
+#   switch input_format
+#     when 'svg', 'svgfont'
+#       extension = settings[ 'input-extension' ] = 'svg'
+#     else throw new Error "input format not supported: #{rpr input_format}"
+#   #.........................................................................................................
+#   name_glob   = "#{font_name}-+([0-9a-f]).#{extension}"
+#   route_glob  = settings[ 'input-glob'    ] = @_join_routes input_directory, name_glob
+#   R           = settings[ 'input-routes'  ] = glob.sync route_glob
+#   return R
 
 #-----------------------------------------------------------------------------------------------------------
 @_font_name_from_route = ( route ) ->
@@ -122,10 +122,19 @@ program
   .description  "generate a *.ttf font from an SVG source"
   .option       '-f, --force', "overwrite existing *.ttf file where present"
   .action ( sourcepath, targetpath, options ) =>
-    is_recognized   = true
-    # targetpath          ?= sourcepath
-    options.force  ?= false
-    info "^38392 generate #{sourcepath} => #{targetpath} (force: #{options.force})"
+    is_recognized = true
+    #.......................................................................................................
+    if options.targetpath?
+      throw new Error "^svgttf#3309 setting `targetpath` not yet implemented"
+    #.......................................................................................................
+    settings      =
+      sourcepath:       sourcepath
+      targetpath:       options.targetpath ? null
+      force_overwrite:  options.force      ? false
+    settings      = @_compile_settings settings
+    settings      = { ( require './options' )..., settings..., }
+    debug '^7773^', settings
+    # SVGTTF.generate settings
 
 #-----------------------------------------------------------------------------------------------------------
 program.parse process.argv
@@ -137,14 +146,14 @@ if not is_recognized
 
 #.........................................................................................................
 #   usage     = """
-#   Usage: svgttf [-f] <input-directory> <font-name> <input-format> <output-directory> <output-format>
+#   Usage: svgttf [-f] <input_directory> <fontname> <input-format> <output_directory> <output-format>
 
 #         Currently the only allowed arguments are:
 #         <input-format>:     must be `svg`
 #         <output-format>:    must be `ttf`
-#         <input-directory>:  route to directory with your SVG design sheets
-#         <font-name>:        name of your font
-#         <output-directory>: directory where output is written to
+#         <input_directory>:  route to directory with your SVG design sheets
+#         <fontname>:        name of your font
+#         <output_directory>: directory where output is written to
 
 #         Please observe:
 
