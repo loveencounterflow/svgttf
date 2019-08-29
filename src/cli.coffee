@@ -91,25 +91,25 @@ SVGTTF                    = require '..'
 @_font_name_from_route = ( route ) ->
   match = route.match /([^\/]+)-[0-9a-f]+?\.svg$/
   unless match?
-    throw new Error "unable to parse route #{rpr route}"
+    throw new Error "^svgttfcli#555^ unable to parse route #{rpr route}"
   R = match[ 1 ]
   unless R.length > 0
-    throw new Error "illegal font name in route #{rpr route}"
+    throw new Error "^svgttfcli#587^ illegal font name in route #{rpr route}"
   return R
 
 #-----------------------------------------------------------------------------------------------------------
 @_cid0_from_route = ( route ) ->
   match = route.match /-([0-9a-f]+)\.svg$/
   unless match?
-    throw new Error "unable to parse route #{rpr route}"
+    throw new Error "^svgttfcli#619^ unable to parse route #{rpr route}"
   R = parseInt match[ 1 ], 16
   unless 0x0000 <= R <= 0x10ffff
-    throw new Error "illegal CID in route #{rpr route}"
+    throw new Error "^svgttfcli#651^ illegal CID in route #{rpr route}"
   return R
 
 #-----------------------------------------------------------------------------------------------------------
 unless require.main is module then do =>
-  throw new Error "^svgttf#332^ this module cannot be imported"
+  throw new Error "^svgttfcli#683^ this module cannot be imported"
 
 #-----------------------------------------------------------------------------------------------------------
 program       = require 'commander'
@@ -125,7 +125,7 @@ program
     is_recognized = true
     #.......................................................................................................
     if options.targetpath?
-      throw new Error "^svgttf#3309 setting `targetpath` not yet implemented"
+      throw new Error "^svgttfcli#715 setting `targetpath` not yet implemented"
     #.......................................................................................................
     settings      =
       sourcepath:       sourcepath
@@ -133,13 +133,13 @@ program
       force_overwrite:  options.force      ? false
     settings      = @_compile_settings settings
     settings      = { ( require './options' )..., settings..., }
-    debug '^7773^', settings
-    # SVGTTF.generate settings
+    # debug '^7773^', settings
+    SVGTTF.generate settings
 
 #-----------------------------------------------------------------------------------------------------------
 program.parse process.argv
 if not is_recognized
-  console.error ( CND.yellow CND.reverse '^svgttf#3342^\n' ) + CND.red CND.reverse """
+  console.error ( CND.yellow CND.reverse "^svgttfcli#747^\n" ) + CND.red CND.reverse """
     Invalid command: #{process.argv[ 2 .. ].join ' '}
     See --help for a list of available commands."""
   process.exit 1
