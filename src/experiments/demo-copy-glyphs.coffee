@@ -126,10 +126,11 @@ SVGTTF                    = require '../main'
 @demo_glyph_copying = ->
   fonts_home  = project_abspath '.', 'materials'
   entries     = [
-    { filename: 'FandolSong-Regular.subset.otf',  glyphs: '与丐', }
-    { filename: 'Sun-ExtA-excerpts.ttf',          glyphs: ( """
-      冰串丳匚匛匜匝匞匟匠匡匢匣匤匥匦匧匨匩匪匫匬匭匮匯匰匱匲匳匴匵匶匷匸匹
-      """.replace /\s/g, '' ), }
+    { filename: 'fonts/sun-exta.ttf', }
+    # { filename: 'FandolSong-Regular.subset.otf',  glyphs: '与丐', }
+    # { filename: 'Sun-ExtA-excerpts.ttf',          glyphs: ( """
+    #   冰串丳匚匛匜匝匞匟匠匡匢匣匤匥匦匧匨匩匪匫匬匭匮匯匰匱匲匳匴匵匶匷匸匹
+    #   """.replace /\s/g, '' ), }
       # 叠叡叢口古句另叧叨叩只叫召叭叮可台叱史右叴叵叶号司叹叺叻叼叽叾叿吀吁吂
       # 吃各吅吆吇合吉吊吋同名后吏吐向吒吓吔吕吖吗吘吙吚君吜吝吞吟吠吡吢吣吤吥
       # 否吧吨吩吪含听吭吮启吰吱吲吳吴吵吶吷吸吹吺吻吼吽吾吿呀呁呂呃呄呅呆呇呈
@@ -173,12 +174,16 @@ SVGTTF                    = require '../main'
     <inkscape:grid type='xygrid' id='grid490' units='px' spacingx='36' spacingy='36' empspacing='8'/>
   </sodipodi:namedview>
   """
+  write """<g id='layer:origin' inkscape:groupmode='layer' inkscape:label='layer:origin' sodipodi:insensitive='true'>"""
+  write """<circle cx='0' cy='0' r='2' id='origin' style='fill:#ff0000;fill-opacity:1'/>"""
+  write """</g>"""
   write """<g id='layer:glyphs' inkscape:groupmode='layer' inkscape:label='layer:glyphs'>"""
   #.........................................................................................................
   glyph_idx = -1
   for { filename, glyphs, } in entries
     filepath    = PATH.resolve PATH.join fonts_home, filename
     font        = @load_font filepath
+    glyphs     ?= ( String.fromCodePoint cid for cid in [ 0x4e00 .. 0x9fff ] )
     for glyph in Array.from glyphs
       glyph_idx++
       col_idx     = glyph_idx %% 16

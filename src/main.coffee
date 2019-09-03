@@ -91,131 +91,131 @@ select                    = XPATH.useNamespaces 'SVG': 'http://www.w3.org/2000/s
     else
       transform     = null
     #.....................................................................................................
-    svg_path      = ( new SvgPath path.getAttribute 'd' ).abs()
+    path_data     = path.getAttribute 'd'
+    continue if ( not path_data? ) or ( path_data is '' ) ### safeguard against (meaningless, but legal) empty paths ###
+    svg_path      = ( new SvgPath path_data ).abs()
     svg_path      = svg_path.translate transform[ 1 ], transform[ 2 ] if transform?
     center        = @center_from_absolute_path svg_path
-    [ x, y, ]     = center
-    debug '^7765-1^', ( path.getAttribute 'id' )
-    debug '^7765-1^', ( path.getAttribute 'd' )[ .. 100 ]
-    debug '^7765-1^', "center at #{rpr center}"
-    col           = ( x - me.x0 ) // me.module
-    row           = ( y - me.y0 ) // me.module
-    debug '^7765-1^', "col, row #{col}, #{row}"
-    # debug '^7765-2^', "col #{col}, row #{row}, block_count #{block_count}, actual_row #{actual_row}, cid 0x#{cid.toString 16}"
-    ### !!!!!!!!!!!!!!!!!!!!!!!!!! ###
-    dx            = - ( col * me.module ) # - me.offset[ 0 ]
-    dy            = - ( row * me.module ) # - me.offset[ 1 ]
+    col           = ( center[ 0 ] - me.x0 ) // me.module
+    row           = ( center[ 1 ] - me.y0 ) // me.module
+    dx            = - ( col * me.module )
+    dy            = - ( row * me.module )
     svg_path      = svg_path
       .translate  dx, dy
       .scale      1, -1
-      .translate  0, 64.9 ### TAINT magic number, equals ( me.module * 2 - 7.1 ) for some reason ###
+      # .translate  0, 64.9 ### TAINT magic number, equals ( me.module * 2 - 7.1 ) for some reason ###
+      .translate  0, 28.9
       .scale      me.scale
       .round      0
-    cid                 = ( '@'.codePointAt 0 ) + ( col %% 16 ) + ( row * 16 ) ### TAINT magic number 16: glyphs per row ###
+    cid                 = 0x4e00 + ( col %% 16 ) + ( row * 16 ) ### TAINT magic number 16: glyphs per row ###
+    unless isa.number cid
+      ### TAINT should never happen ###
+      warn "^svgttf#3442 not a CID: [ col, row ]: #{ [ col, row, ]}, center: #{center}, path_data: #{rpr path_data}"
+      continue
     glyphs[ cid ]       = [ cid, svg_path, ]
     ### !!!!!!!!!!!!!!!!!!!!!!!!!! ###
   glyphs = ( entry for _, entry of glyphs )
   svgfont = @svgfont_from_name_and_glyphs me, me.fontname, glyphs
   return @_write_ttf me, svgfont
-  return null
-  #.......................................................................................................
-  #.......................................................................................................
-  #.......................................................................................................
-  #.......................................................................................................
-  #.......................................................................................................
-  for path in paths
-    #.....................................................................................................
-    if ( transform = path.getAttribute 'transform' )? and transform.length > 0
-      match         = transform.match /^translate\(([-+.0-9]+),([-+.0-9]+)\)$/
-      throw new Error "unable to parse transform #{rpr transform}" unless match?
-      [ _, x, y, ]  = match
-      x             = parseFloat x
-      y             = parseFloat y
-      validate.number x
-      validate.number y
-      transform     = [ 'translate', x, y ]
-    #.....................................................................................................
-    else
-      transform     = null
-    #.....................................................................................................
-    path          = ( new SvgPath path.getAttribute 'd' ).abs()
-    path          = path.translate transform[ 1 ], transform[ 2 ] if transform?
-    path          = path.translate me.correction[ 0 ], me.correction[ 1 ] if me.correction?
-    path          = path.translate -me.x0, -me.y0
-    center        = @center_from_absolute_path path
-    [ x, y, ]     = center
-    x            -= me.offset[ 0 ]
-    y            -= me.offset[ 1 ]
-    col           = Math.floor x / me.module
-    row           = Math.floor y / me.module
-    block_count   = row // me.block_height
-    actual_row    = row - block_count
-    cid           = me.cid0 + actual_row * me.row_length + col
-    debug '^7765-1^', "center at #{rpr center}"
-    debug '^7765-2^', "col #{col}, row #{row}, block_count #{block_count}, actual_row #{actual_row}, cid 0x#{cid.toString 16}"
-    debug '^7765-3^', [ x - me.x0, y - me.y0, ]
-    dx            = - ( col * me.module ) - me.offset[ 0 ]
-    dy            = - ( row * me.module ) - me.offset[ 1 ]
-    #.....................................................................................................
-    path          = path
-      .translate  dx, dy
-      .scale      1, -1
-      .translate  0, me.module
-      .scale      me.scale
-      .round      0
-    #.....................................................................................................
-    if cid < me.cid0
-      prefix          = if fallback? then 're-' else ''
-      fallback        = path
-      fallback_source = me.sourcepath # filename
-      whisper "^svgttf#2542^ #{cwd_relpath me.sourcepath}: #{prefix}assigned fallback"
-    #.....................................................................................................
-    else
-      min_cid       = Math.min       min_cid, cid
-      max_cid       = Math.max       max_cid, cid
-      local_min_cid = Math.min local_min_cid, cid
-      local_max_cid = Math.max local_max_cid, cid
-      if glyphs[ cid ]?
-        warn "^svgttf#3196^ #{cwd_relpath me.sourcepath}: duplicate CID: 0x#{cid.toString 16}"
-      else
-        glyphs[ cid ]       = [ cid, path, ]
-        glyph_count        += 1
-        local_glyph_count  += 1
-  #.......................................................................................................
-  if local_glyph_count > 0
-    min_cid_hex = '0x' + local_min_cid.toString 16
-    max_cid_hex = '0x' + local_max_cid.toString 16
-    help "^svgttf#3850^ #{cwd_relpath me.sourcepath}: added #{local_glyph_count} glyph outlines to [ #{min_cid_hex} .. #{max_cid_hex} ]"
-  else
-    warn "^svgttf#4504^ #{cwd_relpath me.sourcepath}: no glyphs found"
-  #.........................................................................................................
-  #.........................................................................................................
-  #.........................................................................................................
-  #.........................................................................................................
-  #.........................................................................................................
-  #.........................................................................................................
-  if glyph_count is 0
-    warn "^svgttf#5158^ no glyphs found; terminating"
-    process.exit 1
-  #.........................................................................................................
-  for cid in [ min_cid .. max_cid ]
-    unless glyphs[ cid ]?
-      glyphs[ cid ]   = [ cid, fallback, ]
-      fallback_count += 1
-  if fallback_count > 0
-    whisper "^svgttf#5812^ filled #{fallback_count} positions with fallback outline from #{fallback_source}"
-  min_cid_hex = '0x' + min_cid.toString 16
-  max_cid_hex = '0x' + max_cid.toString 16
-  help "^svgttf#6466^ added #{glyph_count} glyph outlines to [ #{min_cid_hex} .. #{max_cid_hex} ]"
-  #.........................................................................................................
-  glyphs = ( entry for _, entry of glyphs )
-  glyphs.sort ( a, b ) ->
-    return +1 if a[ 0 ] > b[ 0 ]
-    return -1 if a[ 0 ] < b[ 0 ]
-    return  0
-  #.........................................................................................................
-  svgfont = @svgfont_from_name_and_glyphs me.fontname, glyphs
-  return @_write_ttf me, svgfont
+  # return null
+  # #.......................................................................................................
+  # #.......................................................................................................
+  # #.......................................................................................................
+  # #.......................................................................................................
+  # #.......................................................................................................
+  # for path in paths
+  #   #.....................................................................................................
+  #   if ( transform = path.getAttribute 'transform' )? and transform.length > 0
+  #     match         = transform.match /^translate\(([-+.0-9]+),([-+.0-9]+)\)$/
+  #     throw new Error "unable to parse transform #{rpr transform}" unless match?
+  #     [ _, x, y, ]  = match
+  #     x             = parseFloat x
+  #     y             = parseFloat y
+  #     validate.number x
+  #     validate.number y
+  #     transform     = [ 'translate', x, y ]
+  #   #.....................................................................................................
+  #   else
+  #     transform     = null
+  #   #.....................................................................................................
+  #   path          = ( new SvgPath path.getAttribute 'd' ).abs()
+  #   path          = path.translate transform[ 1 ], transform[ 2 ] if transform?
+  #   path          = path.translate me.correction[ 0 ], me.correction[ 1 ] if me.correction?
+  #   path          = path.translate -me.x0, -me.y0
+  #   center        = @center_from_absolute_path path
+  #   [ x, y, ]     = center
+  #   x            -= me.offset[ 0 ]
+  #   y            -= me.offset[ 1 ]
+  #   col           = Math.floor x / me.module
+  #   row           = Math.floor y / me.module
+  #   block_count   = row // me.block_height
+  #   actual_row    = row - block_count
+  #   cid           = me.cid0 + actual_row * me.row_length + col
+  #   debug '^7765-1^', "center at #{rpr center}"
+  #   debug '^7765-2^', "col #{col}, row #{row}, block_count #{block_count}, actual_row #{actual_row}, cid 0x#{cid.toString 16}"
+  #   debug '^7765-3^', [ x - me.x0, y - me.y0, ]
+  #   dx            = - ( col * me.module ) - me.offset[ 0 ]
+  #   dy            = - ( row * me.module ) - me.offset[ 1 ]
+  #   #.....................................................................................................
+  #   path          = path
+  #     .translate  dx, dy
+  #     .scale      1, -1
+  #     .translate  0, me.module
+  #     .scale      me.scale
+  #     .round      0
+  #   #.....................................................................................................
+  #   if cid < me.cid0
+  #     prefix          = if fallback? then 're-' else ''
+  #     fallback        = path
+  #     fallback_source = me.sourcepath # filename
+  #     whisper "^svgttf#2542^ #{cwd_relpath me.sourcepath}: #{prefix}assigned fallback"
+  #   #.....................................................................................................
+  #   else
+  #     min_cid       = Math.min       min_cid, cid
+  #     max_cid       = Math.max       max_cid, cid
+  #     local_min_cid = Math.min local_min_cid, cid
+  #     local_max_cid = Math.max local_max_cid, cid
+  #     if glyphs[ cid ]?
+  #       warn "^svgttf#3196^ #{cwd_relpath me.sourcepath}: duplicate CID: 0x#{cid.toString 16}"
+  #     else
+  #       glyphs[ cid ]       = [ cid, path, ]
+  #       glyph_count        += 1
+  #       local_glyph_count  += 1
+  # #.......................................................................................................
+  # if local_glyph_count > 0
+  #   min_cid_hex = '0x' + local_min_cid.toString 16
+  #   max_cid_hex = '0x' + local_max_cid.toString 16
+  #   help "^svgttf#3850^ #{cwd_relpath me.sourcepath}: added #{local_glyph_count} glyph outlines to [ #{min_cid_hex} .. #{max_cid_hex} ]"
+  # else
+  #   warn "^svgttf#4504^ #{cwd_relpath me.sourcepath}: no glyphs found"
+  # #.........................................................................................................
+  # #.........................................................................................................
+  # #.........................................................................................................
+  # #.........................................................................................................
+  # #.........................................................................................................
+  # #.........................................................................................................
+  # if glyph_count is 0
+  #   warn "^svgttf#5158^ no glyphs found; terminating"
+  #   process.exit 1
+  # #.........................................................................................................
+  # for cid in [ min_cid .. max_cid ]
+  #   unless glyphs[ cid ]?
+  #     glyphs[ cid ]   = [ cid, fallback, ]
+  #     fallback_count += 1
+  # if fallback_count > 0
+  #   whisper "^svgttf#5812^ filled #{fallback_count} positions with fallback outline from #{fallback_source}"
+  # min_cid_hex = '0x' + min_cid.toString 16
+  # max_cid_hex = '0x' + max_cid.toString 16
+  # help "^svgttf#6466^ added #{glyph_count} glyph outlines to [ #{min_cid_hex} .. #{max_cid_hex} ]"
+  # #.........................................................................................................
+  # glyphs = ( entry for _, entry of glyphs )
+  # glyphs.sort ( a, b ) ->
+  #   return +1 if a[ 0 ] > b[ 0 ]
+  #   return -1 if a[ 0 ] < b[ 0 ]
+  #   return  0
+  # #.........................................................................................................
+  # svgfont = @svgfont_from_name_and_glyphs me.fontname, glyphs
+  # return @_write_ttf me, svgfont
 
 #-----------------------------------------------------------------------------------------------------------
 @_find_origin = ( me ) ->
@@ -290,14 +290,17 @@ select                    = XPATH.useNamespaces 'SVG': 'http://www.w3.org/2000/s
           R.push [ x, y, ]
       #.....................................................................................................
       when 'Q'
-        warn rpr path
-        throw new Error """
-          quadratic splines (SVG path commands `q` and `Q` not yet supported; in case you're
-          working with Inkscape, identify the offending path and nudge one of its control points
-          slightly and save the document; this will cause Inkscape to convert the outline to a
-          cubic spline.
+        for idx in [ 0 ... xy.length ] by +4
+          [ x, y, ] = [ xy[ idx + 2 ], xy[ idx + 3 ], ]
+          R.push [ x, y, ]
+        # warn rpr path
+        # throw new Error """
+        #   quadratic splines (SVG path commands `q` and `Q` not yet supported; in case you're
+        #   working with Inkscape, identify the offending path and nudge one of its control points
+        #   slightly and save the document; this will cause Inkscape to convert the outline to a
+        #   cubic spline.
 
-          see http://inkscape.13.x6.nabble.com/Quadratic-beziers-td2856790.html"""
+        #   see http://inkscape.13.x6.nabble.com/Quadratic-beziers-td2856790.html"""
       #.....................................................................................................
       else
         warn rpr path
@@ -367,8 +370,8 @@ T.MARKER = ( xy, r = 10 ) ->
 
 #-----------------------------------------------------------------------------------------------------------
 T.path = ( path ) ->
-  path_txt = SVGTTF._path_data_from_svg_path path
-  return T.TAG 'path', d: path_txt, fill: '#000'
+  path_data = SVGTTF._path_data_from_svg_path path
+  return T.TAG 'path', d: path_data, fill: '#000'
 
 #-----------------------------------------------------------------------------------------------------------
 @svgfont_from_name_and_glyphs = ( me, font_name, glyphs ) ->
