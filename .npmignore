@@ -28,6 +28,6 @@ node_modules
 # copied from npmignore-additions:  #
 #####################################
 
-art/Screen*# Logs
+art/Screen*
 materials/*
 
