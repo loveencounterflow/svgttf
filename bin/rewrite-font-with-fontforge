@@ -1,0 +1,10 @@
+#!/usr/bin/env fontforge -lang=ff
+#!fontforge -lang=ff
+#!flatpak run io.github.Fontforge -quiet
+#!/usr/local/bin/fontforge -lang=ff
+# Note: the above is for a Homebrew-installed FF on OSX
+# use /usr/bin/fontforge on most Linuxes.
+
+Open($1);
+Generate($1);
+
