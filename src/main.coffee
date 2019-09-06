@@ -141,22 +141,19 @@ path_precision            = 5
   return "<!-- #{cid_hex} #{glyph} --><path d='#{pathdata}'/>"
 
 #-----------------------------------------------------------------------------------------------------------
-@svg_pathdata_from_cid = ( otjsfont, cid ) ->
+@glyph_and_pathdata_from_cid = ( otjsfont, cid ) ->
+  XXXXX_metrics       = @new_metrics()
   validate.positive_integer cid
-  fglyph      = otjsfont.charToGlyph String.fromCodePoint cid
+  fglyph              = otjsfont.charToGlyph String.fromCodePoint cid
   return null unless fglyph.unicode?
-  path_obj    = fglyph.getPath 0, 0, 360
-  pathdata    = path_obj.toPathData path_precision
+  path_obj            = fglyph.getPath 0, 0, XXXXX_metrics.font_size
+  pathdata            = path_obj.toPathData path_precision
   return null if pathdata.length is 0
-  svg_path    = new SvgPath pathdata
-  # svg_path    = svg_path.rel()
-  factor      = 10
-  svg_path    = svg_path.scale factor, -factor
-  # δx          = col_idx * 36
-  # δy          = ( row_idx + 1 ) * 36 - 5 ### magic number 5: ascent of outline ###
-  # svg_path    = svg_path.translate δx, δy
-  # svg_path    = svg_path.round path_precision
-  return svg_path.toString()
+  svg_path            = new SvgPath pathdata
+  global_glyph_scale  = XXXXX_metrics.global_glyph_scale ? 1
+  scale_factor        = XXXXX_metrics.scale_factor * global_glyph_scale
+  svg_path            = svg_path.scale scale_factor, -scale_factor
+  return { glyph: fglyph, pathdata: svg_path.toString(), }
 
 #-----------------------------------------------------------------------------------------------------------
 @otjspath_from_pathdata = ( pathdata ) ->
