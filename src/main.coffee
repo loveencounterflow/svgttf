@@ -39,6 +39,38 @@ OT                        = @_OT      = require 'opentype.js'
 SvgPath                   = @_SvgPath = require 'svgpath'
 path_precision            = 5
 
+#===========================================================================================================
+# METRICS
+#-----------------------------------------------------------------------------------------------------------
+@new_metrics = ->
+  R =
+    em_size:          4096  ### a.k.a. design size, grid size ###
+    ascender:         null,
+    descender:        null,
+    font_size:        360   ### in pixels ###
+    scale_factor:     null
+    # ### TAINT magic number
+    # for whatever reason, we have to calculate advanceWidth with an additional tracking factor:
+    # advanceWidth = glyph.advanceWidth * metrics.scale_factor * metrics.tracking_factor ###
+    # tracking_factor:  256 / 182
+  R.scale_factor        =  R.em_size / R.font_size
+  R.ascender            =  R.em_size / ( 256 / 220 )
+  R.descender           = -R.em_size / 5
+  # R.global_glyph_scale  = 50 / 48.5 ### TAINT value must come from configuration ###
+  R.global_glyph_scale  = 256 / 248 ### TAINT value must come from configuration ###
+  return R
+
+#-----------------------------------------------------------------------------------------------------------
+@new_otjs_font = ( me, name, glyphs ) ->
+  validate.nonempty_text name
+  return new OT.Font {
+    familyName:   name,
+    styleName:    'Medium',
+    unitsPerEm:   me.em_size,
+    ascender:     me.ascender,
+    descender:    me.descender,
+    glyphs:       glyphs }
+
 
 #===========================================================================================================
 # FONTFORGE
