@@ -179,6 +179,46 @@ path_precision            = 5
       else throw new Error "^svgttf#2231 unknown SVG path element #{rpr type}"
   return R
 
+#-----------------------------------------------------------------------------------------------------------
+@get_fallback_glyph = ( me, shape = 'square' ) ->
+  # validate.svgttf_metrics me
+  validate.nonempty_text shape
+  #.........................................................................................................
+  width         = 3 * me.em_size // 4
+  x0            = me.em_size // 8
+  x1            = x0 + width
+  y0            = 0
+  y1            = width
+  path          = new OT.Path()
+  #.........................................................................................................
+  switch shape
+    when 'square'
+      path.moveTo x0, y0
+      path.lineTo x1, y0
+      path.lineTo x1, y1
+      path.lineTo x0, y1
+      path.close()
+    when 'uptriangle'
+      xm = ( x0 + x1 ) // 2
+      path.moveTo x0, y0
+      path.lineTo x1, y0
+      path.lineTo xm, y1
+      path.close()
+    when 'round'
+      xm = ( x0 + x1 ) // 2
+      ym = ( y0 + y1 ) // 2
+      path.moveTo   xm, y0
+      path.quadTo   x1, y0, x1, ym
+      path.quadTo   x1, y1, xm, y1
+      path.quadTo   x0, y1, x0, ym
+      path.quadTo   x0, y0, xm, y0
+      path.close()
+    else throw new Error "^svgttf#3391 unknown shape #{rpr shape}"
+  #.........................................................................................................
+  name          = '.notdef'
+  unicode       = 0
+  advanceWidth  = me.em_size
+  return new OT.Glyph { name, unicode, advanceWidth, path, }
 
 
 
