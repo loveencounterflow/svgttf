@@ -58,6 +58,7 @@ path_precision            = 5
   R.descender           = -R.em_size / 5
   # R.global_glyph_scale  = 50 / 48.5 ### TAINT value must come from configuration ###
   R.global_glyph_scale  = 256 / 248 ### TAINT value must come from configuration ###
+  # R.global_glyph_scale  = 1 ### TAINT value must come from configuration ###
   return R
 
 #-----------------------------------------------------------------------------------------------------------
@@ -71,11 +72,42 @@ path_precision            = 5
     descender:    me.descender,
     glyphs:       glyphs }
 
+#-----------------------------------------------------------------------------------------------------------
+@_find_ideographic_advance_factor = ( otjsfont ) ->
+  ### In some fonts, the advance width of CJK ideographs differs from the font design size; this is
+  especially true for fonts from the `cwTeXQ` series. This routine probes the font with a number of CJK
+  codepoints and returns the ratio of the font design size and the advance width of the first CJK glyph.
+  The function always returns 1 for fonts that do not contain CJK characters. ###
+  probe = Array.from '一丁乘㐀㑔㙜𠀀𠀁𠀈𪜵𪝘𪜲𫝀𫝄𫠢𫡄𫡦𬺰𬻂'
+  for chr in probe
+    cid = chr.codePointAt 0
+    continue unless ( glyph = @glyph_from_cid otjsfont, cid )?
+    return otjsfont.unitsPerEm / glyph.advanceWidth
+  return 1
 
 #===========================================================================================================
 # FONTFORGE
 #-----------------------------------------------------------------------------------------------------------
+@exec_fontforge_script = ( script, parameters = null ) ->
+  command     = 'fontforge'
+  parameters  = [ '--lang=ff', '-c', script, ( parameters ? [] )..., ]
+  settings    =
+    cwd:        process.cwd()
+    timeout:    3 * 60 * 1000 ### TAINT make timeout configurable ###
+    encoding:   'utf-8'
+    shell:      false
+  #.........................................................................................................
+  { status
+    stderr }  = spawn_sync command, parameters, settings
+  #.........................................................................................................
+  unless status is 0
+    throw new Error """^svgttf#3309 when trying to execute `#{command} #{jr parameters}`, an error occurred:
+      #{stderr}"""
+  return null
+
+#-----------------------------------------------------------------------------------------------------------
 @rewrite_with_fontforge = ( path ) ->
+  ### TAINT rewrite using `exec_fontforge_script()` ###
   help "^svgttf#0091 size before normalisation: #{CND.format_number @_size_from_path path} B"
   #.........................................................................................................
   command     = 'fontforge'
@@ -112,8 +144,22 @@ path_precision            = 5
 #-----------------------------------------------------------------------------------------------------------
 @save_otjsfont = ( path, otjsfont ) ->
   # FS.writeFileSync path, buffer = otjsfont.toBuffer() # deprecated
-  FS.writeFileSync path, buffer = Buffer.from otjsfont.toArrayBuffer()
+  # buffer = Buffer.from otjsfont.toArrayBuffer()
+  buffer = Buffer.from @_otjsfont_toArrayBuffer otjsfont
+  FS.writeFileSync path, buffer
   return buffer.length
+
+@_otjsfont_toArrayBuffer = ( otjsfont ) ->
+  sfntTable = otjsfont.toTables();
+  bytes     = sfntTable.encode();
+  buffer    = new ArrayBuffer(bytes.length);
+  intArray  = new Uint8Array(buffer);
+  ```
+  for (let i = 0; i < bytes.length; i++) {
+      intArray[i] = bytes[i];
+  }
+  ```
+  return buffer;
 
 #-----------------------------------------------------------------------------------------------------------
 @list_glyphs_in_otjsfont = ( otjsfont ) ->
@@ -141,17 +187,22 @@ path_precision            = 5
   return "<!-- #{cid_hex} #{glyph} --><path d='#{pathdata}'/>"
 
 #-----------------------------------------------------------------------------------------------------------
-@glyph_and_pathdata_from_cid = ( otjsfont, cid ) ->
-  XXXXX_metrics       = @new_metrics()
+@glyph_from_cid = ( otjsfont, cid ) ->
   validate.positive_integer cid
-  fglyph              = otjsfont.charToGlyph String.fromCodePoint cid
-  return null unless fglyph.unicode?
-  path_obj            = fglyph.getPath 0, 0, XXXXX_metrics.font_size
+  R = otjsfont.charToGlyph String.fromCodePoint cid
+  return if R.unicode? then R else null
+
+#-----------------------------------------------------------------------------------------------------------
+@glyph_and_pathdata_from_cid = ( me, otjsfont, cid ) ->
+  validate.positive_integer cid
+  fglyph              = @glyph_from_cid otjsfont, cid
+  return null unless fglyph?
+  path_obj            = fglyph.getPath 0, 0, me.font_size
   pathdata            = path_obj.toPathData path_precision
   return null if pathdata.length is 0
   svg_path            = new SvgPath pathdata
-  global_glyph_scale  = XXXXX_metrics.global_glyph_scale ? 1
-  scale_factor        = XXXXX_metrics.scale_factor * global_glyph_scale
+  global_glyph_scale  = me.global_glyph_scale ? 1
+  scale_factor        = me.scale_factor * global_glyph_scale
   svg_path            = svg_path.scale scale_factor, -scale_factor
   return { glyph: fglyph, pathdata: svg_path.toString(), }
 
@@ -182,6 +233,7 @@ path_precision            = 5
 #-----------------------------------------------------------------------------------------------------------
 @get_fallback_glyph = ( me, shape = 'square' ) ->
   # validate.svgttf_metrics me
+  '❶❷❸❹❺❻❼❽❾❿'
   validate.nonempty_text shape
   #.........................................................................................................
   width         = 3 * me.em_size // 4
