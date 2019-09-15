@@ -37,7 +37,9 @@ require                   './exception-handler'
 #...........................................................................................................
 OT                        = @_OT      = require 'opentype.js'
 SvgPath                   = @_SvgPath = require 'svgpath'
-path_precision            = 5
+# DUMBSVGPATH               = require './experiments/dumb-svg-parser'
+path_precision            = 3
+
 
 #===========================================================================================================
 # METRICS
@@ -193,18 +195,44 @@ path_precision            = 5
   return if R.unicode? then R else null
 
 #-----------------------------------------------------------------------------------------------------------
-@glyph_and_pathdata_from_cid = ( me, otjsfont, cid ) ->
+@_quickscale = ( path_obj, scale_x, scale_y = null ) ->
+  scale_y ?= scale_x
+  for command in path_obj.commands
+    for key, value of command
+      switch key
+        when 'x', 'x1', 'x2' then command[ key ] *= scale_x
+        when 'y', 'y1', 'y2' then command[ key ] *= scale_y
+  return null
+
+#-----------------------------------------------------------------------------------------------------------
+@glyph_and_pathdata_from_cid = ( me, otjsfont, cid, tag = 'use-quickscale' ) ->
   validate.positive_integer cid
   fglyph              = @glyph_from_cid otjsfont, cid
   return null unless fglyph?
   path_obj            = fglyph.getPath 0, 0, me.font_size
-  pathdata            = path_obj.toPathData path_precision
-  return null if pathdata.length is 0
-  svg_path            = new SvgPath pathdata
+  return null if path_obj.commands.length is 0
   global_glyph_scale  = me.global_glyph_scale ? 1
   scale_factor        = me.scale_factor * global_glyph_scale
-  svg_path            = svg_path.scale scale_factor, -scale_factor
-  return { glyph: fglyph, pathdata: svg_path.toString(), }
+  switch tag
+    when 'use-quickscale'
+      @_quickscale path_obj, scale_factor, -scale_factor
+      pathdata = path_obj.toPathData path_precision
+      return { glyph: fglyph, pathdata, }
+    when 'use-dumb-svg-parser'
+      throw new Error "^svgttf@3223 dumb-svg-parser not yet supported"
+      pathdata            = path_obj.toPathData path_precision
+      svg_path            = DUMBSVGPATH.parse pathdata
+      # debug '^3362^', svg_path
+      DUMBSVGPATH.scale scale_factor, -scale_factor
+      # debug '^3362^', svg_path
+      return { glyph: fglyph, pathdata: ( DUMBSVGPATH.as_compressed_text svg_path ), }
+    when 'use-svgpath'
+      pathdata            = path_obj.toPathData path_precision
+      svg_path            = new SvgPath pathdata
+      svg_path            = svg_path.scale scale_factor, -scale_factor
+      svg_path            = svg_path.round path_precision
+      return { glyph: fglyph, pathdata: svg_path.toString(), }
+  throw new Error "^svgttf@4582^ unknown tag #{rpr tag}"
 
 #-----------------------------------------------------------------------------------------------------------
 @otjspath_from_pathdata = ( pathdata ) ->
