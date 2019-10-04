@@ -189,9 +189,17 @@ path_precision            = 3
   return "<!-- #{cid_hex} #{glyph} --><path d='#{pathdata}'/>"
 
 #-----------------------------------------------------------------------------------------------------------
+### TAINT rename to something like `otjsglyph_from_...()` ###
 @glyph_from_cid = ( otjsfont, cid ) ->
   validate.positive_integer cid
-  R = otjsfont.charToGlyph String.fromCodePoint cid
+  return @glyph_from_glyph otjsfont, String.fromCodePoint cid
+
+#-----------------------------------------------------------------------------------------------------------
+### TAINT rename to something like `otjsglyph_from_...()` ###
+@glyph_from_glyph = ( otjsfont, glyph ) ->
+  ### TAINT validate is character ###
+  # validate.positive_integer cid
+  R = otjsfont.charToGlyph glyph
   return if R.unicode? then R else null
 
 #-----------------------------------------------------------------------------------------------------------
@@ -208,7 +216,7 @@ path_precision            = 3
 @glyph_and_pathdata_from_cid = ( me, otjsfont, cid, tag = 'use-quickscale' ) ->
   validate.positive_integer cid
   fglyph              = @glyph_from_cid otjsfont, cid
-  return null unless fglyph?
+  return null if ( not fglyph? ) or ( fglyph.name is '.notdef' )
   path_obj            = fglyph.getPath 0, 0, me.font_size
   return null if path_obj.commands.length is 0
   global_glyph_scale  = me.global_glyph_scale ? 1
@@ -218,20 +226,20 @@ path_precision            = 3
       @_quickscale path_obj, scale_factor, -scale_factor
       pathdata = path_obj.toPathData path_precision
       return { glyph: fglyph, pathdata, }
-    when 'use-dumb-svg-parser'
-      throw new Error "^svgttf@3223 dumb-svg-parser not yet supported"
-      pathdata            = path_obj.toPathData path_precision
-      svg_path            = DUMBSVGPATH.parse pathdata
-      # debug '^3362^', svg_path
-      DUMBSVGPATH.scale scale_factor, -scale_factor
-      # debug '^3362^', svg_path
-      return { glyph: fglyph, pathdata: ( DUMBSVGPATH.as_compressed_text svg_path ), }
-    when 'use-svgpath'
-      pathdata            = path_obj.toPathData path_precision
-      svg_path            = new SvgPath pathdata
-      svg_path            = svg_path.scale scale_factor, -scale_factor
-      svg_path            = svg_path.round path_precision
-      return { glyph: fglyph, pathdata: svg_path.toString(), }
+    # when 'use-dumb-svg-parser'
+    #   throw new Error "^svgttf@3223 dumb-svg-parser not yet supported"
+    #   pathdata            = path_obj.toPathData path_precision
+    #   svg_path            = DUMBSVGPATH.parse pathdata
+    #   # debug '^3362^', svg_path
+    #   DUMBSVGPATH.scale scale_factor, -scale_factor
+    #   # debug '^3362^', svg_path
+    #   return { glyph: fglyph, pathdata: ( DUMBSVGPATH.as_compressed_text svg_path ), }
+    # when 'use-svgpath'
+    #   pathdata            = path_obj.toPathData path_precision
+    #   svg_path            = new SvgPath pathdata
+    #   svg_path            = svg_path.scale scale_factor, -scale_factor
+    #   svg_path            = svg_path.round path_precision
+    #   return { glyph: fglyph, pathdata: svg_path.toString(), }
   throw new Error "^svgttf@4582^ unknown tag #{rpr tag}"
 
 #-----------------------------------------------------------------------------------------------------------
