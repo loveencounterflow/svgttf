@@ -168,7 +168,8 @@ path_precision            = 3
   R = new Set()
   #.........................................................................................................
   for idx, glyph of otjsfont.glyphs.glyphs
-    if glyph.name in [ '.notdef', ] or ( not glyph.unicode? ) or ( glyph.unicode < 0x20 )
+    # if glyph.name in [ '.notdef', ] or ( not glyph.unicode? ) or ( glyph.unicode < 0x20 )
+    if ( not glyph.unicode? ) or ( glyph.unicode < 0x20 )
       warn "skipping glyph #{rpr glyph.name}"
       continue
     unicodes  = glyph.unicodes
@@ -216,7 +217,9 @@ path_precision            = 3
 @glyph_and_pathdata_from_cid = ( me, otjsfont, cid, tag = 'use-quickscale' ) ->
   validate.positive_integer cid
   fglyph              = @glyph_from_cid otjsfont, cid
-  return null if ( not fglyph? ) or ( fglyph.name is '.notdef' )
+  # debug '^svgttf/glyph_and_pathdata_from_cid@277262', fglyph?.name
+  return null if ( not fglyph? )
+  # return null if ( not fglyph? ) or ( fglyph.name is '.notdef' )
   path_obj            = fglyph.getPath 0, 0, me.font_size
   return null if path_obj.commands.length is 0
   global_glyph_scale  = me.global_glyph_scale ? 1
