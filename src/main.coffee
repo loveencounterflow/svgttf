@@ -214,7 +214,7 @@ path_precision            = 3
   return null
 
 #-----------------------------------------------------------------------------------------------------------
-@glyph_and_pathdata_from_cid = ( me, otjsfont, cid, tag = 'use-quickscale' ) ->
+@glyph_and_pathdata_from_cid = ( me, otjsfont, cid ) ->
   validate.positive_integer cid
   fglyph              = @glyph_from_cid otjsfont, cid
   # debug '^svgttf/glyph_and_pathdata_from_cid@277262', fglyph?.name
@@ -224,26 +224,9 @@ path_precision            = 3
   return null if path_obj.commands.length is 0
   global_glyph_scale  = me.global_glyph_scale ? 1
   scale_factor        = me.scale_factor * global_glyph_scale
-  switch tag
-    when 'use-quickscale'
-      @_quickscale path_obj, scale_factor, -scale_factor
-      pathdata = path_obj.toPathData path_precision
-      return { glyph: fglyph, pathdata, }
-    # when 'use-dumb-svg-parser'
-    #   throw new Error "^svgttf@3223 dumb-svg-parser not yet supported"
-    #   pathdata            = path_obj.toPathData path_precision
-    #   svg_path            = DUMBSVGPATH.parse pathdata
-    #   # debug '^3362^', svg_path
-    #   DUMBSVGPATH.scale scale_factor, -scale_factor
-    #   # debug '^3362^', svg_path
-    #   return { glyph: fglyph, pathdata: ( DUMBSVGPATH.as_compressed_text svg_path ), }
-    # when 'use-svgpath'
-    #   pathdata            = path_obj.toPathData path_precision
-    #   svg_path            = new SvgPath pathdata
-    #   svg_path            = svg_path.scale scale_factor, -scale_factor
-    #   svg_path            = svg_path.round path_precision
-    #   return { glyph: fglyph, pathdata: svg_path.toString(), }
-  throw new Error "^svgttf@4582^ unknown tag #{rpr tag}"
+  @_quickscale path_obj, scale_factor, -scale_factor
+  pathdata = path_obj.toPathData path_precision
+  return { glyph: fglyph, pathdata, }
 
 #-----------------------------------------------------------------------------------------------------------
 @otjspath_from_pathdata = ( pathdata ) ->
