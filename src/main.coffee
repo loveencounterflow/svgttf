@@ -33,8 +33,6 @@ jr                        = JSON.stringify
   size_of
   type_of }               = @types
 #...........................................................................................................
-require                   './exception-handler'
-#...........................................................................................................
 OT                        = @_OT      = require 'opentype.js'
 SvgPath                   = @_SvgPath = require 'svgpath'
 # DUMBSVGPATH               = require './experiments/dumb-svg-parser'
