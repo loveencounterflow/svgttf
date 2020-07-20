@@ -45,6 +45,7 @@ path_precision            = 3
 @new_metrics = ->
   R =
     em_size:          4096  ### a.k.a. design size, grid size ###
+    # em_size:          1000  ### a.k.a. design size, grid size ###
     ascender:         null,
     descender:        null,
     font_size:        360   ### in pixels ###
@@ -186,6 +187,9 @@ path_precision            = 3
   glyph       = String.fromCodePoint cid
   cid_hex     = "0x#{cid.toString 16}"
   return "<!-- #{cid_hex} #{glyph} --><path d='#{pathdata}'/>"
+
+#-----------------------------------------------------------------------------------------------------------
+# @svg_pathdata_from_cid = ( otjsfont, cid ) -> ( @)
 
 #-----------------------------------------------------------------------------------------------------------
 ### TAINT rename to something like `otjsglyph_from_...()` ###
