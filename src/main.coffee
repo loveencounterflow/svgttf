@@ -15,9 +15,6 @@ help                      = CND.get_logger 'help',      badge
 whisper                   = CND.get_logger 'whisper',   badge
 echo                      = CND.echo.bind CND
 #...........................................................................................................
-test                      = require 'guy-test'
-PATH                      = require 'path'
-#...........................................................................................................
 @types                    = require './types'
 { isa
   validate
