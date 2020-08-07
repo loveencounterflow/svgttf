@@ -44,6 +44,7 @@ OT                        = require 'opentype.js'
 
 #-----------------------------------------------------------------------------------------------------------
 @pathdata_from_glyphidx = ( me, glyph_idx, size = null ) ->
+  ### TAINT should implement fallback value for case when glyph not found ###
   validate.svgttf_font me
   validate.count glyph_idx
   validate.nonnegative size if size?
@@ -51,13 +52,39 @@ OT                        = require 'opentype.js'
 
 #-----------------------------------------------------------------------------------------------------------
 @_fast_pathdata_from_glyphidx = ( me, glyph_idx, size = null ) ->
+  ### TAINT should implement fallback value for case when glyph not found ###
   path_precision  = 0
   x               = 0
   y               = 0
   glyph           = me.otjsfont.glyphs.glyphs[ glyph_idx ]
+  return null unless glyph?
   size            = size ? me.otjsfont.unitsPerEm
   path            = glyph.getPath x, y, size
   return path.toPathData path_precision
+
+#-----------------------------------------------------------------------------------------------------------
+@pathdataplus_from_glyphidx = ( me, glyph_idx, size = null ) ->
+  ### TAINT should implement fallback value for case when glyph not found ###
+  validate.svgttf_font me
+  validate.count glyph_idx
+  validate.nonnegative size if size?
+  return @_fast_pathdataplus_from_glyphidx me, glyph_idx, size
+
+#-----------------------------------------------------------------------------------------------------------
+@_fast_pathdataplus_from_glyphidx = ( me, glyph_idx, size = null ) ->
+  ### TAINT should implement fallback value for case when glyph not found ###
+  pathdata        = null
+  glyphname       = null
+  path_precision  = 0
+  x               = 0
+  y               = 0
+  glyph           = me.otjsfont.glyphs.glyphs[ glyph_idx ]
+  if glyph?
+    size            = size ? me.otjsfont.unitsPerEm
+    path            = glyph.getPath x, y, size
+    pathdata        = path.toPathData path_precision
+    glyphname       = glyph.name
+  return { pathdata, glyphname, }
 
 #-----------------------------------------------------------------------------------------------------------
 @_pathelement_from_pathdata = ( me, pathdata, transform = null ) ->
