@@ -22,6 +22,15 @@ echo                      = CND.echo.bind CND
 OT                        = require 'opentype.js'
 
 #-----------------------------------------------------------------------------------------------------------
+@get_metrics = ( me ) ->
+  R             = {}
+  R.ascent      = me.otjsfont.tables.os2.sTypoAscender
+  R.upm         = me.otjsfont.unitsPerEm
+  R.baseline    = R.ascent
+  R.descent     = R.upm - R.baseline
+  return R
+
+#-----------------------------------------------------------------------------------------------------------
 @_transform_fn_as_text = ( transform_fn ) ->
   validate.svgttf_svg_transform_fn transform_fn
   [ name, p..., ] = transform_fn
