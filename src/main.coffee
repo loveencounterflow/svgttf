@@ -93,7 +93,8 @@ OT                        = require 'opentype.js'
     path            = glyph.getPath x, y, size
     pathdata        = path.toPathData path_precision
     glyphname       = glyph.name
-  return { pathdata, glyphname, }
+    return { pathdata, glyphname, chr: ( String.fromCodePoint cid ), } if ( cid = glyph.unicode )?
+  return { pathdata, glyphname, chr: '', }
 
 #-----------------------------------------------------------------------------------------------------------
 @_pathelement_from_pathdata = ( me, pathdata, transform = null ) ->
