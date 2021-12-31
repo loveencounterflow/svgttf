@@ -1,14 +1,11 @@
 
-
-
-
 'use strict'
 
 
 ############################################################################################################
 CND                       = require 'cnd'
 rpr                       = CND.rpr
-badge                     = 'SVGTTF/TYPES'
+badge                     = 'INTERTEXT/TYPES'
 debug                     = CND.get_logger 'debug',     badge
 alert                     = CND.get_logger 'alert',     badge
 whisper                   = CND.get_logger 'whisper',   badge
@@ -19,47 +16,42 @@ info                      = CND.get_logger 'info',      badge
 jr                        = JSON.stringify
 Intertype                 = ( require 'intertype' ).Intertype
 intertype                 = new Intertype module.exports
+# L                         = @
 
-# #-----------------------------------------------------------------------------------------------------------
-# @declare 'pd_nonempty_list_of_positive_integers', ( x ) ->
-#   return false unless @isa.nonempty_list x
-#   return x.every ( xx ) => @isa.positive_integer xx
+#-----------------------------------------------------------------------------------------------------------
+@declare 'svgttf_font', tests:
+  "x is a object":                            ( x ) -> @isa.object x
+  "x.path is a nonempty_text":                ( x ) -> @isa.nonempty_text x.path
+  "x.otjsfont is an object":                  ( x ) -> @isa.object x.otjsfont
 
-# #-----------------------------------------------------------------------------------------------------------
-# @declare 'pd_datom_sigil',
-#   tests:
-#     "x is a chr":                             ( x ) -> @isa.chr x
-#     "x has sigil":                            ( x ) -> x in '^<>~[]'
+#-----------------------------------------------------------------------------------------------------------
+@declare 'svgttf_svg_transform_fn', tests:
+  "x is a list":                                ( x ) -> @isa.list x
+  "x has between 2 and 6 elements":             ( x ) -> 2 <= x.length <= 6
+  "x[ 0 ] is a svgttf_svg_transform_name":      ( x ) -> @isa.svgttf_svg_transform_name x[ 0 ]
+  "tail of x is a svgttf_svg_transform_value":  ( x ) ->
+    return @isa.svgttf_svg_transform_value x[ 1 ] if x.length is 2
+    return @isa.svgttf_svg_transform_value x[ 1 .. ]
 
-# #-----------------------------------------------------------------------------------------------------------
-# @declare 'pd_datom_key',
-#   tests:
-#     "x is a nonempty text":                   ( x ) -> @isa.nonempty_text   x
-#     "x has sigil":                            ( x ) -> @isa.pd_datom_sigil  x[ 0 ]
+#-----------------------------------------------------------------------------------------------------------
+@declare 'svgttf_svg_transform_name', ( x ) ->
+  x in [ 'matrix', 'rotate', 'scale', 'skewX', 'skewY', 'translate', ]
 
-# #-----------------------------------------------------------------------------------------------------------
-# @declare 'pd_datom',
-#   tests:
-#     "x is a object":                          ( x ) -> @isa.object          x
-#     "x has key 'key'":                        ( x ) -> @has_key             x, 'key'
-#     "x.key is a pd_datom_key":                ( x ) -> @isa.pd_datom_key    x.key
-#     "x.$stamped is an optional boolean":      ( x ) -> ( not x.$stamped? ) or ( @isa.boolean x.$stamped )
-#     "x.$dirty is an optional boolean":        ( x ) -> ( not x.$dirty?   ) or ( @isa.boolean x.$dirty   )
-#     "x.$fresh is an optional boolean":        ( x ) -> ( not x.$fresh?   ) or ( @isa.boolean x.$fresh   )
-#     #.......................................................................................................
-#     "x.$vnr is an optional nonempty list of positive integers": ( x ) ->
-#       ( not x.$vnr? ) or @isa.pd_nonempty_list_of_positive_integers x.$vnr
+#-----------------------------------------------------------------------------------------------------------
+@declare 'svgttf_harfbuzz_linotype', ( x ) ->
+  @isa.list_of 'svgttf_harfbuzz_linotype_sort', x
 
-#     # "?..$vnr is a ?positive":            ( x ) -> ( not x.$vnr? ) or @isa.positive x.$vnr
-# #     "? has key 'vlnr_txt'":                   ( x ) -> @has_key             x, 'vlnr_txt'
-# #     "? has key 'value'":                      ( x ) -> @has_key             x, 'value'
-# #     "?.vlnr_txt is a nonempty text":          ( x ) -> @isa.nonempty_text   x.vlnr_txt
-# #     "?.vlnr_txt starts, ends with '[]'":      ( x ) -> ( x.vlnr_txt.match /^\[.*\]$/ )?
-# #     "?.vlnr_txt is a JSON array of integers": ( x ) ->
-# #       # debug 'µ55589', x
-# #       ( @isa.list ( lst = JSON.parse x.vlnr_txt ) ) and \
-# #       ( lst.every ( xx ) => ( @isa.integer xx ) and ( @isa.positive xx ) )
+#-----------------------------------------------------------------------------------------------------------
+@declare 'svgttf_harfbuzz_linotype_sort', tests:
+  "x is an object":                   ( x ) -> @isa.object x
+  "x.upem is a positive_integer":     ( x ) -> @isa.positive_integer x.upem
+  "x.gid is a count":                 ( x ) -> @isa.count x.gid
+  "x.x_advance is a float":           ( x ) -> @isa.float x.x_advance
 
-# # #-----------------------------------------------------------------------------------------------------------
-# # @declare 'true', ( x ) -> x is true
+#-----------------------------------------------------------------------------------------------------------
+@declare 'svgttf_svg_transform_value', ( x ) ->
+  ( @isa.nonempty_text x ) or ( @isa.float x ) or ( ( @isa.list_of 'float', x ) and x.length > 0 )
+
+
+
 

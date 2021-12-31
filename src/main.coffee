@@ -2,303 +2,216 @@
 
 'use strict'
 
+
 ############################################################################################################
 CND                       = require 'cnd'
-CHR                       = require 'coffeenode-chr'
-rpr                       = CND.rpr.bind CND
+rpr                       = CND.rpr
 badge                     = 'SVGTTF/MAIN'
-log                       = CND.get_logger 'plain',   badge
-info                      = CND.get_logger 'info',    badge
-alert                     = CND.get_logger 'alert',   badge
-debug                     = CND.get_logger 'debug',   badge
-warn                      = CND.get_logger 'warn',    badge
-urge                      = CND.get_logger 'urge',    badge
-whisper                   = CND.get_logger 'whisper', badge
-help                      = CND.get_logger 'help',    badge
+debug                     = CND.get_logger 'debug',     badge
+warn                      = CND.get_logger 'warn',      badge
+info                      = CND.get_logger 'info',      badge
+urge                      = CND.get_logger 'urge',      badge
+help                      = CND.get_logger 'help',      badge
+whisper                   = CND.get_logger 'whisper',   badge
 echo                      = CND.echo.bind CND
-#...........................................................................................................
-FS                        = require 'fs'
-PATH                      = require 'path'
-# exec                      = ( require 'util' ).promisify ( require 'child_process' ).exec
-spawn_sync                = ( require 'child_process' ).spawnSync
-# CP                        = require 'child_process'
-jr                        = JSON.stringify
 #...........................................................................................................
 @types                    = require './types'
 { isa
   validate
-  declare
-  first_of
-  last_of
-  size_of
   type_of }               = @types
-#...........................................................................................................
-OT                        = @_OT      = require 'opentype.js'
-SvgPath                   = @_SvgPath = require 'svgpath'
-# DUMBSVGPATH               = require './experiments/dumb-svg-parser'
-path_precision            = 3
+OT                        = require 'opentype.js'
 
-
-#===========================================================================================================
-# METRICS
 #-----------------------------------------------------------------------------------------------------------
-@new_metrics = ->
-  R =
-    em_size:          4096  ### a.k.a. design size, grid size ###
-    # em_size:          1000  ### a.k.a. design size, grid size ###
-    ascender:         null,
-    descender:        null,
-    font_size:        360   ### in pixels ###
-    scale_factor:     null
-    # ### TAINT magic number
-    # for whatever reason, we have to calculate advanceWidth with an additional tracking factor:
-    # advanceWidth = glyph.advanceWidth * metrics.scale_factor * metrics.tracking_factor ###
-    # tracking_factor:  256 / 182
-  R.scale_factor        =  R.em_size / R.font_size
-  R.ascender            =  R.em_size / ( 256 / 220 )
-  R.descender           = -R.em_size / 5
-  # R.global_glyph_scale  = 50 / 48.5 ### TAINT value must come from configuration ###
-  R.global_glyph_scale  = 256 / 248 ### TAINT value must come from configuration ###
-  # R.global_glyph_scale  = 1 ### TAINT value must come from configuration ###
+@get_metrics = ( me ) ->
+  R             = {}
+  R.ascent      = me.otjsfont.tables.os2.sTypoAscender
+  R.upm         = me.otjsfont.unitsPerEm
+  R.baseline    = R.ascent
+  R.descent     = R.upm - R.baseline
   return R
 
 #-----------------------------------------------------------------------------------------------------------
-@new_otjs_font = ( me, name, glyphs ) ->
-  validate.nonempty_text name
-  return new OT.Font {
-    familyName:   name,
-    styleName:    'Medium',
-    unitsPerEm:   me.em_size,
-    ascender:     me.ascender,
-    descender:    me.descender,
-    glyphs:       glyphs }
+@_transform_fn_as_text = ( transform_fn ) ->
+  validate.svgttf_svg_transform_fn transform_fn
+  [ name, p..., ] = transform_fn
+  if p.length is 1 then p = p[ 0 ]
+  return "#{name}(#{p})" if ( isa.text p ) or ( isa.float p )
+  return "#{name}(#{p.join ','})" if isa.list p
 
 #-----------------------------------------------------------------------------------------------------------
-@_find_ideographic_advance_factor = ( otjsfont ) ->
-  ### In some fonts, the advance width of CJK ideographs differs from the font design size; this is
-  especially true for fonts from the `cwTeXQ` series. This routine probes the font with a number of CJK
-  codepoints and returns the ratio of the font design size and the advance width of the first CJK glyph.
-  The function always returns 1 for fonts that do not contain CJK characters. ###
-  probe = Array.from '一丁乘㐀㑔㙜𠀀𠀁𠀈𪜵𪝘𪜲𫝀𫝄𫠢𫡄𫡦𬺰𬻂'
-  for chr in probe
-    cid = chr.codePointAt 0
-    continue unless ( glyph = @glyph_from_cid otjsfont, cid )?
-    return otjsfont.unitsPerEm / glyph.advanceWidth
-  return 1
-
-#===========================================================================================================
-# FONTFORGE
-#-----------------------------------------------------------------------------------------------------------
-@exec_fontforge_script = ( script, parameters = null ) ->
-  command     = 'fontforge'
-  parameters  = [ '--lang=ff', '-c', script, ( parameters ? [] )..., ]
-  settings    =
-    cwd:        process.cwd()
-    timeout:    3 * 60 * 1000 ### TAINT make timeout configurable ###
-    encoding:   'utf-8'
-    shell:      false
-  #.........................................................................................................
-  { status
-    stderr }  = spawn_sync command, parameters, settings
-  #.........................................................................................................
-  unless status is 0
-    throw new Error """^svgttf#3309 when trying to execute `#{command} #{jr parameters}`, an error occurred:
-      #{stderr}"""
-  return null
+@_transform_as_text = ( transform ) ->
+  return null unless transform?
+  validate.list transform
+  return null if transform.length is 0
+  return "transform='#{(@_transform_fn_as_text tf for tf in transform).join ' '}'"
 
 #-----------------------------------------------------------------------------------------------------------
-@rewrite_with_fontforge = ( path ) ->
-  ### TAINT rewrite using `exec_fontforge_script()` ###
-  help "^svgttf#0091 size before normalisation: #{CND.format_number @_size_from_path path} B"
-  #.........................................................................................................
-  command     = 'fontforge'
-  parameters  = [ '--lang=ff', '-c', "Open($1); Generate($1);", path, ]
-  settings    =
-    cwd:        process.cwd()
-    timeout:    3 * 60 * 1000
-    encoding:   'utf-8'
-    shell:      false
-  #.........................................................................................................
-  { status
-    stderr }  = spawn_sync command, parameters, settings
-  #.........................................................................................................
-  unless status is 0
-    throw new Error """^svgttf#3309 when trying to execute #{jr command} #{jr parameters}, an error occurred:
-      #{stderr}"""
-  #.........................................................................................................
-  help "^svgttf#0091 size  after normalisation: #{CND.format_number @_size_from_path path} B"
-  return null
+@pathelement_from_glyphidx = ( me, glyph_idx, size = null, transform ) ->
+  pathdata = @pathdata_from_glyphidx me, glyph_idx, size
+  return null if ( not pathdata? ) or ( pathdata is '' )
+  @_pathelement_from_pathdata me, pathdata, transform
 
 #-----------------------------------------------------------------------------------------------------------
-@_size_from_path = ( path ) ->
-  try
-    return ( FS.statSync path ).size
-  catch error
-    return null if error.code is 'ENOENT'
-    throw error
-
-#===========================================================================================================
-# OPENTYPE.JS
-#-----------------------------------------------------------------------------------------------------------
-@otjsfont_from_path = ( path ) -> OT.loadSync path
+@pathdata_from_glyphidx = ( me, glyph_idx, size = null ) ->
+  ### TAINT should implement fallback value for case when glyph not found ###
+  validate.svgttf_font me
+  validate.count glyph_idx
+  validate.nonnegative size if size?
+  return @_fast_pathdata_from_glyphidx me, glyph_idx, size
 
 #-----------------------------------------------------------------------------------------------------------
-@save_otjsfont = ( path, otjsfont ) ->
-  # FS.writeFileSync path, buffer = otjsfont.toBuffer() # deprecated
-  # buffer = Buffer.from otjsfont.toArrayBuffer()
-  buffer = Buffer.from @_otjsfont_toArrayBuffer otjsfont
-  FS.writeFileSync path, buffer
-  return buffer.length
-
-@_otjsfont_toArrayBuffer = ( otjsfont ) ->
-  sfntTable = otjsfont.toTables();
-  bytes     = sfntTable.encode();
-  buffer    = new ArrayBuffer(bytes.length);
-  intArray  = new Uint8Array(buffer);
-  ```
-  for (let i = 0; i < bytes.length; i++) {
-      intArray[i] = bytes[i];
-  }
-  ```
-  return buffer;
+@_fast_pathdata_from_glyphidx = ( me, glyph_idx, size = null ) ->
+  ### TAINT should implement fallback value for case when glyph not found ###
+  path_precision  = 0
+  x               = 0
+  y               = 0
+  glyph           = me.otjsfont.glyphs.glyphs[ glyph_idx ]
+  return null unless glyph?
+  size            = size ? me.otjsfont.unitsPerEm
+  path            = glyph.getPath x, y, size
+  return path.toPathData path_precision
 
 #-----------------------------------------------------------------------------------------------------------
-@list_glyphs_in_otjsfont = ( otjsfont ) ->
-  R = new Set()
-  #.........................................................................................................
-  for idx, glyph of otjsfont.glyphs.glyphs
-    # if glyph.name in [ '.notdef', ] or ( not glyph.unicode? ) or ( glyph.unicode < 0x20 )
-    if ( not glyph.unicode? ) or ( glyph.unicode < 0x20 )
-      warn "skipping glyph #{rpr glyph.name}"
-      continue
-    unicodes  = glyph.unicodes
-    unicodes  = [ glyph.unicode, ] if ( not unicodes? ) or ( unicodes.length is 0 )
-    # debug rpr glyph
-    # debug rpr unicodes
-    for cid in unicodes
-      # debug rpr cid
-      R.add String.fromCodePoint cid
-  #.........................................................................................................
-  return [ R... ].sort()
+@pathdataplus_from_glyphidx = ( me, glyph_idx, size = null ) ->
+  ### TAINT should implement fallback value for case when glyph not found ###
+  validate.svgttf_font me
+  validate.count glyph_idx
+  validate.nonnegative size if size?
+  return @_fast_pathdataplus_from_glyphidx me, glyph_idx, size
 
 #-----------------------------------------------------------------------------------------------------------
-@svg_path_from_cid = ( otjsfont, cid ) ->
-  pathdata    = @svg_pathdata_from_cid otjsfont, cid
-  glyph       = String.fromCodePoint cid
-  cid_hex     = "0x#{cid.toString 16}"
-  return "<!-- #{cid_hex} #{glyph} --><path d='#{pathdata}'/>"
+@_fast_pathdataplus_from_glyphidx = ( me, glyph_idx, size = null ) ->
+  ### TAINT should implement fallback value for case when glyph not found ###
+  pathdata        = null
+  glyphname       = null
+  path_precision  = 0
+  x               = 0
+  y               = 0
+  glyph           = me.otjsfont.glyphs.glyphs[ glyph_idx ]
+  if glyph?
+    size            = size ? me.otjsfont.unitsPerEm
+    path            = glyph.getPath x, y, size
+    pathdata        = path.toPathData path_precision
+    glyphname       = glyph.name
+    return { pathdata, glyphname, chr: ( String.fromCodePoint cid ), } if ( cid = glyph.unicode )?
+  return { pathdata, glyphname, chr: '', }
 
 #-----------------------------------------------------------------------------------------------------------
-# @svg_pathdata_from_cid = ( otjsfont, cid ) -> ( @)
+@_pathelement_from_pathdata = ( me, pathdata, transform = null ) ->
+  if ( tf_txt = @_transform_as_text transform )?
+    return "<path #{tf_txt} d='#{pathdata}'/>"
+  return "<path d='#{pathdata}'/>"
 
 #-----------------------------------------------------------------------------------------------------------
-### TAINT rename to something like `otjsglyph_from_...()` ###
-@glyph_from_cid = ( otjsfont, cid ) ->
-  validate.positive_integer cid
-  return @glyph_from_glyph otjsfont, String.fromCodePoint cid
+@_get_svg = ( me, x1, y1, x2, y2, content ) ->
+  validate.float x1
+  validate.float y1
+  validate.float x2
+  validate.float y2
+  R = []
+  R.push "<?xml version='1.0' standalone='no'?>"
+  R.push "<svg xmlns='http://www.w3.org/2000/svg' "
+  ### TAINT make optional to adapt to SVG v2, see https://css-tricks.com/on-xlinkhref-being-deprecated-in-svg/ ###
+  R.push "xmlns:xlink='http://www.w3.org/1999/xlink' "
+  R.push "viewBox='#{x1} #{y1} #{x2} #{y2}'>"
+  switch type = type_of content
+    when 'text'   then R.push content
+    when 'list'   then R = R.concat content
+    else throw new Error "^svgttf/_get_svg_from_glyphidx@3337^ expected a text or a list, got a #{type}"
+  R.push "</svg>"
+  return R.join ''
 
 #-----------------------------------------------------------------------------------------------------------
-### TAINT rename to something like `otjsglyph_from_...()` ###
-@glyph_from_glyph = ( otjsfont, glyph ) ->
-  ### TAINT validate is character ###
-  # validate.positive_integer cid
-  R = otjsfont.charToGlyph glyph
-  return if R.unicode? then R else null
+@svg_from_glyphidx = ( me, glyph_idx, size ) ->
+  pathelement = @pathelement_from_glyphidx me, glyph_idx, size #, transform
+  ### TAINT derive coordinates from metrics ###
+  return @_get_svg me, 0, -800, 1000, 1000, pathelement
 
 #-----------------------------------------------------------------------------------------------------------
-@_quickscale = ( path_obj, scale_x, scale_y = null ) ->
-  scale_y ?= scale_x
-  for command in path_obj.commands
-    for key, value of command
-      switch key
-        when 'x', 'x1', 'x2' then command[ key ] *= scale_x
-        when 'y', 'y1', 'y2' then command[ key ] *= scale_y
-  return null
-
-#-----------------------------------------------------------------------------------------------------------
-@glyph_and_pathdata_from_cid = ( me, otjsfont, cid ) ->
-  validate.positive_integer cid
-  fglyph              = @glyph_from_cid otjsfont, cid
-  # debug '^svgttf/glyph_and_pathdata_from_cid@277262', fglyph?.name
-  return null if ( not fglyph? )
-  # return null if ( not fglyph? ) or ( fglyph.name is '.notdef' )
-  path_obj            = fglyph.getPath 0, 0, me.font_size
-  return null if path_obj.commands.length is 0
-  global_glyph_scale  = me.global_glyph_scale ? 1
-  scale_factor        = me.scale_factor * global_glyph_scale
-  @_quickscale path_obj, scale_factor, -scale_factor
-  pathdata = path_obj.toPathData path_precision
-  return { glyph: fglyph, pathdata, }
-
-#-----------------------------------------------------------------------------------------------------------
-@otjspath_from_pathdata = ( pathdata ) ->
-  validate.nonempty_text pathdata
-  svg_path  = new SvgPath pathdata
-  R         = new OT.Path()
-  d = R.commands
-  for [ type, tail..., ] in svg_path.segments
-    # debug '^svgttf#3342', [ type, tail..., ]
-    ### TAINT consider to use API (moveTo, lineTo etc) ###
-    switch type
-      when 'M', 'L'
-        [ x, y, ] = tail
-        d.push { type, x, y, }
-      when 'C'
-        [ x1, y1, x2, y2, x, y, ] = tail
-        d.push { type, x1, y1, x2, y2, x, y, }
-      when 'Q'
-        [ x1, y1, x, y, ] = tail
-        d.push { type, x1, y1, x, y, }
-      when 'Z'
-        d.push { type, }
-      else throw new Error "^svgttf#2231 unknown SVG path element #{rpr type}"
+@_get_coordinate_hints = ( me ) ->
+  R = []
+  R.push "<circle cx='0' cy='0' r='20' style='fill:red;'/>"
+  R.push "<circle cx='0' cy='0' r='100' style='fill-opacity:0;stroke:red;stroke-width:10;'/>"
+  R.push "<circle cx='0' cy='0' r='200' style='fill-opacity:0;stroke:red;stroke-width:10;'/>"
+  R.push "<circle cx='0' cy='0' r='300' style='fill-opacity:0;stroke:red;stroke-width:10;'/>"
+  R.push "<circle cx='0' cy='0' r='400' style='fill-opacity:0;stroke:red;stroke-width:10;'/>"
+  R.push "<circle cx='0' cy='0' r='500' style='fill-opacity:0;stroke:red;stroke-width:20;'/>"
+  R.push "<circle cx='0' cy='0' r='600' style='fill-opacity:0;stroke:red;stroke-width:10;'/>"
+  R.push "<circle cx='0' cy='0' r='700' style='fill-opacity:0;stroke:red;stroke-width:10;'/>"
+  R.push "<circle cx='0' cy='0' r='800' style='fill-opacity:0;stroke:red;stroke-width:10;'/>"
+  R.push "<circle cx='0' cy='0' r='900' style='fill-opacity:0;stroke:red;stroke-width:10;'/>"
+  R.push "<circle cx='0' cy='0' r='1000' style='fill-opacity:0;stroke:red;stroke-width:20;'/>"
+  R.push "<line x1='0' y1='0' x2='950' y2='950' style='stroke:red;stroke-width:10;'/>"
+  R.push "<rect x='0' y='0' width='1000' height='1000' style='fill-opacity:0;stroke:red;stroke-width:10;'/>"
   return R
 
 #-----------------------------------------------------------------------------------------------------------
-@get_fallback_glyph = ( me, shape = 'square' ) ->
-  # validate.svgttf_metrics me
-  '❶❷❸❹❺❻❼❽❾❿'
-  validate.nonempty_text shape
-  #.........................................................................................................
-  width         = 3 * me.em_size // 4
-  x0            = me.em_size // 8
-  x1            = x0 + width
-  y0            = 0
-  y1            = width
-  path          = new OT.Path()
-  #.........................................................................................................
-  switch shape
-    when 'square'
-      path.moveTo x0, y0
-      path.lineTo x1, y0
-      path.lineTo x1, y1
-      path.lineTo x0, y1
-      path.close()
-    when 'uptriangle'
-      xm = ( x0 + x1 ) // 2
-      path.moveTo x0, y0
-      path.lineTo x1, y0
-      path.lineTo xm, y1
-      path.close()
-    when 'round'
-      xm = ( x0 + x1 ) // 2
-      ym = ( y0 + y1 ) // 2
-      path.moveTo   xm, y0
-      path.quadTo   x1, y0, x1, ym
-      path.quadTo   x1, y1, xm, y1
-      path.quadTo   x0, y1, x0, ym
-      path.quadTo   x0, y0, xm, y0
-      path.close()
-    else throw new Error "^svgttf#3391 unknown shape #{rpr shape}"
-  #.........................................................................................................
-  name          = '.notdef'
-  unicode       = 0
-  advanceWidth  = me.em_size
-  return new OT.Glyph { name, unicode, advanceWidth, path, }
+@svg_from_harfbuzz_linotype = ( me, harfbuzz_linotype, size ) ->
+  ### TAINT code duplication ###
+  validate.svgttf_harfbuzz_linotype harfbuzz_linotype
+  x = 0
+  y = 0
+  R = []
+  for sort in harfbuzz_linotype
+    transform   = [ [ 'translate', x, y, ], ]
+    ### TAINT figure out relationship between size and upem ###
+    x          += sort.x_advance * size
+    if ( pathelement = @pathelement_from_glyphidx me, sort.gid, size, transform )?
+      R.push '\n' + "<!--gid:#{sort.gid}-->" + pathelement
+  R.push '\n'
+  return @_get_svg me, 0, -800, x, 1000, R
+
+#-----------------------------------------------------------------------------------------------------------
+@get_svg_symbol_font = ( me ) ->
+  # debug '^33431^', ( k for k of me.otjsfont.glyphs.glyphs ) #.glyphs[ glyph_idx ]
+  # debug '^33431^', ( type_of me.otjsfont.glyphs.glyphs ) #.glyphs[ glyph_idx ]
+  R = []
+  for glyph_idx, glyph of me.otjsfont.glyphs.glyphs
+    # continue unless 12 < glyph_idx < 22 ### !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! ###
+    # debug glyph_idx, glyph
+    ### TAINT must derive bounding box from outline ###
+    # glyph.advanceWidth
+    # glyph.leftSideBearing
+    x1      = 0
+    y1      = -800
+    x2      = 1000
+    y2      = 1000
+    vbx_txt = "'#{x1},#{y1},#{x2},#{y2}'"
+    name    = glyph.name ? 'UNKNOWN'
+    id      = "g#{glyph_idx}"
+    ### TAINT set width, height; ###
+    # width='1000' height='1000' viewBox='0,-800,1000,1000'
+    R.push "<symbol id='#{id}' viewBox=#{vbx_txt}>"
+    if ( cid = glyph.unicode )?
+      # glyph.unicodes
+      cid_hex = ( cid.toString 16 ).padStart 4, '0'
+      sfncr   = "u/#{cid_hex}"
+      uglyph  = String.fromCodePoint cid
+      R.push "<!-- #{sfncr} #{uglyph} -->"
+    else
+      R.push "<!-- #{name} -->"
+    pathdata = @_fast_pathdata_from_glyphidx me, glyph_idx, null
+    ### TAINT might consider to leave out glyphs without outline altogether, but OTOH symbol should not
+    cause 404 not found when requested, so we leave those in FTM: ###
+    if pathdata? and ( pathdata isnt '' )
+      R.push @_pathelement_from_pathdata me, pathdata
+    R.push "</symbol>\n"
+  ### TAINT we don't need a bounding box at all for an SVG with only symbols ###
+  ### TAINT alternatively, may display some sample glyphs in font symbol SVG so to have visual feedback on opening ###
+  return @_get_svg me, 0, 0, 10000, 10000, R
 
 
+#===========================================================================================================
+#
+#-----------------------------------------------------------------------------------------------------------
+@font_from_path = ( path ) ->
+  validate.nonempty_text path
+  otjsfont = OT.loadSync path
+  return { path, otjsfont, }
 
 
+# ############################################################################################################
+# if require.main is module then do =>
 
 
 
