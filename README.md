@@ -1,21 +1,30 @@
+
+
+
+# SvgTtf
+
+
+
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
 
-- [SvgTtf](#svgttf)
-  - [Update: Coping With XeLaTex /](#update-coping-with-xelatex-)
-  - [Installation and Command line syntax:](#installation-and-command-line-syntax)
-  - [What SvgTtf does](#what-svgttf-does)
-  - [How SvgTtf does what it does](#how-svgttf-does-what-it-does)
-  - [What SvgTtf does not do](#what-svgttf-does-not-do)
-  - [How to structure your SVG design sheet, organize your workflow, keep on top of things and become a better person](#how-to-structure-your-svg-design-sheet-organize-your-workflow-keep-on-top-of-things-and-become-a-better-person)
-  - [Motivation](#motivation)
-  - [BONUS: SVGTTF IN PRODUCTION!](#bonus-svgttf-in-production)
+- [Old Documentation](#old-documentation)
+  - [SvgTtf](#svgttf)
+    - [Update: Coping With XeLaTex /](#update-coping-with-xelatex-)
+    - [Installation and Command line syntax:](#installation-and-command-line-syntax)
+    - [What SvgTtf does](#what-svgttf-does)
+    - [How SvgTtf does what it does](#how-svgttf-does-what-it-does)
+    - [What SvgTtf does not do](#what-svgttf-does-not-do)
+    - [How to structure your SVG design sheet, organize your workflow, keep on top of things and become a better person](#how-to-structure-your-svg-design-sheet-organize-your-workflow-keep-on-top-of-things-and-become-a-better-person)
+    - [Motivation](#motivation)
+    - [BONUS: SVGTTF IN PRODUCTION!](#bonus-svgttf-in-production)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
+# Old Documentation
 
-# SvgTtf
+## SvgTtf
 
 SVG design sheet—here we draw the glyph shapes:
 
@@ -29,7 +38,7 @@ The resulting TTF font opened in FontForge—ready for any post-processing:
 
 ![](https://github.com/loveencounterflow/svgttf/raw/master/art/Screen%20Shot%202014-10-04%20at%2002.10.12.jpg)
 
-## Update: Coping With XeLaTex /
+### Update: Coping With XeLaTex /
 
 Turns out the present toolchain doesn't produce a 100% perfect font. More precisely,
 it would appear the resulting `*.ttf` file is good enough for TeX Live 2014, but may cause
@@ -52,7 +61,7 @@ Open($1);
 Generate($1);
 ```
 
-## Installation and Command line syntax:
+### Installation and Command line syntax:
 
 Installation is as easy as
 
@@ -99,7 +108,7 @@ node svgttf/lib/main.js --help
 
 to get some hints on what works in the current version.
 
-## What SvgTtf does
+### What SvgTtf does
 
 **SvgTtf turns ordinary SVG documents (that are structured as described below) into installable `*.ttf`
 fonts.**
@@ -111,7 +120,7 @@ fonts.**
 > version of your font—but i believe there are command line tools to help you with that, too).
 
 
-## How SvgTtf does what it does
+### How SvgTtf does what it does
 
 * There's a [W3C recommendation for defining fonts inside SVG files](http://www.w3.org/TR/SVG/fonts.html).
 * Unfortunately, there seem to be no (good) editors for SVG font shapes.
@@ -126,7 +135,7 @@ fonts.**
 * SvgTtf then uses [svg2ttf](https://github.com/fontello/svg2ttf) to turn the SVG font source XML into
   a TTF binary target represention and write that into a `*.ttf` file.
 
-## What SvgTtf does not do
+### What SvgTtf does not do
 
 * There's no concept of metadata (except for the font display name, which equals the font family name and
   the filename).
@@ -134,7 +143,7 @@ fonts.**
   the same (square) dimensions. This is all i need for now.
 
 
-## How to structure your SVG design sheet, organize your workflow, keep on top of things and become a better person
+### How to structure your SVG design sheet, organize your workflow, keep on top of things and become a better person
 
 In order to keep things simple, i have taken a few shortcuts when writing SvgTtf that match my specific
 needs, which means that SvgTtf lacks features like variable glyph widths or easily extended options. In
@@ -228,7 +237,7 @@ Here are some important points to be aware of:
   if it only could).
 
 
-## Motivation
+### Motivation
 
 When wanting to design a font, there are a couple of things that have been really annoying to me for years:
 
@@ -274,7 +283,7 @@ All of the above i can now do with a single line from the terminal:
 node svgttf/lib/main.js -f svgttf/art svgttf-sample-font svg /tmp ttf
 ```
 
-## BONUS: SVGTTF IN PRODUCTION!
+### BONUS: SVGTTF IN PRODUCTION!
 
 And yes, i'm using SvgTtf in production. Here's a current session that shows off how SvgTtf reads a series
 of files, skips over files without outlines, and gives a fairly detailed report on the proceedings:
