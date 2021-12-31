@@ -9,6 +9,7 @@
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
 
+- [Incipient Documentation for Upcoming Version (Caveat Emptor: AYOR)](#incipient-documentation-for-upcoming-version-caveat-emptor-ayor)
 - [Old Documentation](#old-documentation)
   - [SvgTtf](#svgttf)
     - [Update: Coping With XeLaTex /](#update-coping-with-xelatex-)
@@ -21,6 +22,28 @@
     - [BONUS: SVGTTF IN PRODUCTION!](#bonus-svgttf-in-production)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
+# Incipient Documentation for Upcoming Version (Caveat Emptor: AYOR)
+
+* I've added SVG path unions and SVG simplification (thanks to `paper-jsdom`, `svg_pathify`, `svgo`) which
+  means one can now draw outlines with any number (?) of overlapping and/or separated, (arbitrary?) SVG
+  shapes (`<rect/>`, `<circle>`, ...) including explicit SVG `transform`s and still get back a single
+  `<path>` element (find the (huge) SVG file
+  [here](https://github.com/loveencounterflow/hengist/tree/master/assets/svgttf) to compare):
+
+  ```coffee
+  { Svgttf2 } = require '../../../apps/svgttf/lib/svgttf-next'
+  svgttf2     = new Svgttf2()
+  path        = '../../../assets/svgttf/svgttf2-symbol-shapes.svg'
+  path        = PATH.resolve PATH.join __dirname, path
+  svg         = FS.readFileSync path, { encoding: 'utf-8', }
+  result      = svgttf2.glyf_pathdata_from_svg { path, svg, }
+  T?.eq result, {
+    wbr: { sym_name: 'wbr', shift: { x: 1448.363 }, pd: 'M0,660l-147,166h293z' },
+    shy: { sym_name: 'shy', shift: { x: 499.726 }, pd: 'M-204,887h178v-802h50v802h178v70h-406z' } }
+  ```
+
+
 
 # Old Documentation
 
