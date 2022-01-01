@@ -86,7 +86,7 @@ class @Svgttf2
         if path_id.endsWith '-glyfmetric'
           pd          = path_dom.getAttribute 'd'
           bbox        = @_boundingbox_from_pathdata pd
-          entry.shift = { x: bbox.x1, }
+          entry.shift = { x: bbox.x1, y: bbox.y1, }
         else
           pds.push path_dom.getAttribute 'd'
       # urge '^432-7^', pds
@@ -94,7 +94,7 @@ class @Svgttf2
         warn "found no paths for group #{rpr path_id}"
         continue
       entry.pd = @_unite_path_data pds
-      entry.pd = @_shift_pathdata entry.pd, entry.shift if ( entry.shift?.x ? 0 ) != 0
+      entry.pd = @_shift_pathdata entry.pd, entry.shift if entry.shift?
     #.......................................................................................................
     for path_dom in svg_dom.querySelectorAll 'path'
       continue if seen_pathdoms.has path_dom
@@ -191,7 +191,7 @@ class @Svgttf2
     PAPER.setup new PAPER.Size 1000, 1000
     validate.nonempty_text pd
     path_pth    = PAPER.PathItem.create pd
-    path_pth.translate new PAPER.Point -shift.x, 0
+    path_pth.translate new PAPER.Point -shift.x, -shift.y
     return ( path_pth.exportSVG { asString: false, precision: 0, } ).getAttribute 'd'
 
   #---------------------------------------------------------------------------------------------------------
