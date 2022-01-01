@@ -83,7 +83,7 @@ class @Svgttf2
         seen_pathdoms.add path_dom
         path_id = path_dom.getAttribute 'id'
         # debug '^432-5^', { path_id, }
-        if path_id.endsWith '-glyfmetric'
+        if path_id? and path_id.endsWith '-glyfmetric'
           pd          = path_dom.getAttribute 'd'
           bbox        = @_boundingbox_from_pathdata pd
           entry.shift = { x: bbox.x1, y: bbox.y1, }
