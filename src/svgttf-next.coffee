@@ -19,7 +19,7 @@ types                     = new ( require 'intertype' ).Intertype()
   type_of
   isa
   declare               } = types.export()
-PAPER                     = require 'paper-jsdom'
+PAPER                     = @PAPER = require 'paper-jsdom'
 SVGO                      = require 'svgo'
 svg_pathify               = require 'svg_pathify'
 GUY                       = require 'guy'
