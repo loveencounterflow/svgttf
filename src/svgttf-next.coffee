@@ -67,6 +67,7 @@ class @Svgttf2
     svg_dom       = project.exportSVG()
     seen_pathdoms = new Set()
     #.......................................................................................................
+    # debug '^34242^', @_get_dom_node_description d for d in svg_dom.querySelectorAll '*'
     ### Iterate over all groups; group IDs are used to differentiate between groups that contain outlines
     and groups that contain other stuff such as grid. ###
     for g_dom in svg_dom.querySelectorAll 'g'
